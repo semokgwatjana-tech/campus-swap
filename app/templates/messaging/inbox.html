@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Messages{% endblock %}
+{% block content %}
+<div class="container my-4">
+  <h3 class="fw-bold mb-4">Messages</h3>
+  <div class="neu-surface p-2">
+    {% for c in conversations %}
+    <a href="{{ url_for('messaging.conversation', conversation_id=c.id) }}" class="d-flex align-items-center gap-3 conversation-list-item text-decoration-none text-reset">
+      <div class="avatar-circle avatar-circle-lg d-flex align-items-center justify-content-center bg-white fw-bold fs-4">
+        {{ (c.other_participant(current_user.id))|string|first }}
+      </div>
+      <div class="flex-grow-1">
+        <div class="fw-semibold">{{ c.listing.title if c.listing else "Conversation" }}</div>
+        <div class="small text-muted-navy text-truncate" style="max-width:400px;">
+          {{ c.last_message.body if c.last_message and c.last_message.body else "No messages yet. Say hello!" }}
+        </div>
+      </div>
+      <div class="small text-muted-navy">{{ c.last_message.sent_at.strftime('%d %b') if c.last_message else "" }}</div>
+    </a>
+    {% else %}
+    <div class="empty-state"><div class="empty-icon"><i class="bi bi-chat-dots" aria-hidden="true"></i></div><p>No conversations yet.</p>
+      <a href="{{ url_for('marketplace.browse') }}" class="btn-neu-primary">Browse the marketplace</a></div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

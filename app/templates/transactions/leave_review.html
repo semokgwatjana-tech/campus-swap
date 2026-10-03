@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% import "partials/_form_macros.html" as f %}
+{% block title %}Leave a Review{% endblock %}
+{% block content %}
+<div class="container my-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-6">
+      <div class="neu-surface p-4 p-md-5">
+        <h3 class="fw-bold mb-1">Leave a Review</h3>
+        <p class="text-muted-navy mb-4">How was your transaction for <strong>{{ transaction.listing.title }}</strong>?</p>
+        <form method="POST">
+          {{ form.hidden_tag() }}
+          {{ f.select_field(form.rating) }}
+          {{ f.field(form.comment, placeholder="Share details about your experience.") }}
+          <button type="submit" class="btn-neu-primary w-100 mt-2"><i class="bi bi-star-fill" aria-hidden="true"></i> Submit Review</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

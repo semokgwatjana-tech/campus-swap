@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% import "partials/_form_macros.html" as f %}
+{% block title %}Checkout{% endblock %}
+{% block content %}
+<div class="container my-4">
+  <div class="row justify-content-center g-4">
+    <div class="col-lg-5 order-lg-2">
+      <div class="neu-surface p-4">
+        <h6 class="fw-bold mb-3">Order Summary</h6>
+        <div class="d-flex gap-3 mb-3">
+          <div style="width:70px;height:70px;border-radius:14px;overflow:hidden;flex-shrink:0;" class="neu-card p-0">
+            <img src="{{ url_for('static', filename='uploads/' ~ listing.primary_image) }}"
+                 onerror="this.src='{{ url_for('static', filename='uploads/listings/placeholder.png') }}'"
+                 style="width:100%;height:100%;object-fit:cover;" alt="{{ listing.title }}">
+          </div>
+          <div>
+            <div class="fw-semibold">{{ listing.title }}</div>
+            <div class="small text-muted-navy">Sold by {{ listing.seller.full_name }}</div>
+          </div>
+        </div>
+        <div class="receipt-row"><span>Item price</span><span>{{ currency }}{{ "%.2f"|format(transaction.item_price) }}</span></div>
+        <div class="receipt-row"><span>Platform service fee</span><span>{{ currency }}{{ "%.2f"|format(transaction.service_fee) }}</span></div>
+        <div class="receipt-row fw-bold"><span>Total amount</span><span>{{ currency }}{{ "%.2f"|format(transaction.total_amount) }}</span></div>
+        <div class="mt-3 small text-muted-navy">
+          <i class="bi bi-shield-check text-success" aria-hidden="true"></i> Your item is reserved for {{ config.RESERVATION_TIMEOUT_MINUTES if config is defined else 15 }} minutes while you complete checkout.
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-6 order-lg-1">
+      <div class="neu-surface p-4 p-md-5">
+        <h3 class="fw-bold mb-1">Checkout</h3>
+        <p class="text-muted-navy mb-4">Reference <strong>{{ transaction.reference }}</strong>. This is a safe, sandboxed demo payment; no real money moves.</p>
+
+        <form method="POST" id="checkoutForm">
+          {{ form.hidden_tag() }}
+
+          <label class="form-label">Payment method</label>
+          <div class="row g-2 mb-3">
+            {% for value, label, icon in [("card","Card","bi-credit-card"), ("eft","EFT","bi-bank"), ("instant_eft","Instant EFT","bi-lightning-charge")] %}
+            <div class="col-4">
+              <label class="payment-method-option w-100 d-block">
+                <input type="radio" name="payment_method" value="{{ value }}" {{ "checked" if form.payment_method.data == value or (loop.first and not form.payment_method.data) }} onchange="togglePaymentFields(this.value)">
+                <div><i class="bi {{ icon }} d-block fs-4 mb-1" aria-hidden="true"></i>{{ label }}</div>
+              </label>
+            </div>
+            {% endfor %}
+          </div>
+
+          <div id="cardFields">
+            {{ f.field(form.card_number, placeholder="4242 4242 4242 4242") }}
+            <div class="row">
+              <div class="col-6">{{ f.field(form.card_expiry, placeholder="MM/YY") }}</div>
+              <div class="col-6">{{ f.field(form.card_cvv, placeholder="123") }}</div>
+            </div>
+            <p class="small text-muted-navy">Demo tip: a card number ending in <strong>0000</strong> simulates a decline. Any other number succeeds. Card details are never stored; only the last 4 digits appear on your receipt.</p>
+          </div>
+          <div id="eftFields" class="d-none">
+            <div class="ai-suggestion-box small">You'll be redirected to your bank's secure sandbox to approve this EFT / Instant EFT payment. No banking details are entered on Campus Swap.</div>
+          </div>
+
+          {{ f.select_field(form.pickup_location) }}
+          <p class="small text-muted-navy">Choose a safe, public campus location, not a private address.</p>
+
+          <div class="form-check mb-3">
+            {{ form.agree_refund_policy(class="form-check-input" ~ (" is-invalid" if form.agree_refund_policy.errors else "")) }}
+            <label class="form-check-label small" for="agree_refund_policy">
+              I have read the <a href="{{ url_for('main.refund_policy') }}" target="_blank" rel="noopener">Refund Policy</a>
+              and understand how disputes and refunds work for this purchase.
+            </label>
+            {% if form.agree_refund_policy.errors %}
+            <div class="text-danger small mt-1"><i class="bi bi-exclamation-circle" aria-hidden="true"></i> {{ form.agree_refund_policy.errors[0] }}</div>
+            {% endif %}
+          </div>
+
+          <button type="submit" class="btn-neu-primary w-100 mt-2"><i class="bi bi-lock" aria-hidden="true"></i> Confirm Payment ({{ currency }}{{ "%.2f"|format(transaction.total_amount) }})</button>
+        </form>
+        <form action="{{ url_for('transactions.cancel_checkout', transaction_id=transaction.id) }}" method="POST" class="mt-2">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+          <button class="btn btn-link btn-sm text-danger w-100" type="submit">Cancel purchase</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+function togglePaymentFields(method) {
+  document.getElementById('cardFields').classList.toggle('d-none', method !== 'card');
+  document.getElementById('eftFields').classList.toggle('d-none', method === 'card');
+}
+togglePaymentFields(document.querySelector('input[name=payment_method]:checked')?.value || 'card');
+</script>
+{% endblock %}

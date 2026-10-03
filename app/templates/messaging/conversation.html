@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Chat with {{ other_user.full_name }}{% endblock %}
+{% block content %}
+<div class="container my-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="neu-surface p-3 p-md-4">
+        <div class="d-flex align-items-center gap-3 mb-3 pb-3 border-bottom">
+          <div class="avatar-circle d-flex align-items-center justify-content-center bg-white fw-bold">{{ other_user.full_name|first }}</div>
+          <div>
+            <div class="fw-bold">{{ other_user.full_name }}{% if other_user.is_verified %} <i class="bi bi-patch-check-fill text-success small" aria-hidden="true"></i>{% endif %}</div>
+            {% if conversation.listing %}<div class="small text-muted-navy">Re: {{ conversation.listing.title }}</div>{% endif %}
+          </div>
+        </div>
+
+        <div class="chat-window mb-3" id="chatWindow">
+          {% for m in conversation.messages %}
+          <div class="chat-bubble {{ 'mine' if m.sender_id == current_user.id else 'theirs' }}">
+            {% if m.body %}<div>{{ m.body }}</div>{% endif %}
+            {% if m.offer_price %}<div class="small fw-bold mt-1"><i class="bi bi-tag" aria-hidden="true"></i> Offer: {{ currency }}{{ "%.2f"|format(m.offer_price) }}</div>{% endif %}
+            {% if m.proposed_pickup %}<div class="small mt-1"><i class="bi bi-geo-alt" aria-hidden="true"></i> Suggested pickup: {{ m.proposed_pickup }}</div>{% endif %}
+            {% if m.image_filename %}<img src="{{ url_for('static', filename='uploads/' ~ m.image_filename) }}" class="mt-2 rounded-3" style="max-width:180px;" alt="Image shared by {{ m.sender.full_name }}">{% endif %}
+            <div class="small mt-1" style="opacity:0.7;">{{ m.sent_at.strftime('%H:%M') }}{% if m.sender_id == current_user.id and m.is_read %} · Read{% endif %}</div>
+          </div>
+          {% else %}
+          <p class="text-muted-navy text-center small mt-4">No messages yet. Say hello!</p>
+          {% endfor %}
+        </div>
+
+        <form method="POST" enctype="multipart/form-data">
+          {{ form.hidden_tag() }}
+          <div class="row g-2">
+            <div class="col-12">{{ form.body(class="form-control neu-input", rows=2, placeholder="Type a message...") }}</div>
+            <div class="col-md-4">{{ form.offer_price(class="form-control neu-input", placeholder="Offer price (optional)") }}</div>
+            <div class="col-md-4">{{ form.proposed_pickup(class="form-select neu-input") }}</div>
+            <div class="col-md-4">{{ form.image(class="form-control neu-input") }}</div>
+          </div>
+          <button type="submit" class="btn-neu-primary w-100 mt-2"><i class="bi bi-send" aria-hidden="true"></i> Send</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  const cw = document.getElementById('chatWindow');
+  if (cw) cw.scrollTop = cw.scrollHeight;
+</script>
+{% endblock %}

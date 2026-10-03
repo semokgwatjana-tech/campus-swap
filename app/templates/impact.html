@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}My Impact{% endblock %}
+{% block content %}
+<div class="container my-4">
+  <h3 class="fw-bold mb-1"><i class="bi bi-graph-up text-success" aria-hidden="true"></i> My Impact</h3>
+  <p class="text-muted-navy mb-4">A record of your own activity on Campus Swap. Every figure below comes directly from your transaction history.</p>
+  <div class="row g-3">
+    <div class="col-6 col-md-3"><div class="neu-card stat-card"><div class="stat-number">{{ books_sold }}</div><div class="stat-label">Items Sold</div></div></div>
+    <div class="col-6 col-md-3"><div class="neu-card stat-card"><div class="stat-number">{{ donations_made }}</div><div class="stat-label">Resources Donated</div></div></div>
+    <div class="col-6 col-md-3"><div class="neu-card stat-card"><div class="stat-number">{{ currency }}{{ "%.0f"|format(total_earned) }}</div><div class="stat-label">Earned from Sales</div></div></div>
+    <div class="col-6 col-md-3"><div class="neu-card stat-card"><div class="stat-number">{{ currency }}{{ "%.0f"|format(total_spent) }}</div><div class="stat-label">Spent on Purchases</div></div></div>
+  </div>
+  <div class="neu-card mt-4 text-center">
+    <p class="mb-0">You have completed {{ transactions_completed }} transaction{{ "s" if transactions_completed != 1 }} on Campus Swap. Thank you for taking part in the campus resource economy.</p>
+  </div>
+</div>
+{% endblock %}

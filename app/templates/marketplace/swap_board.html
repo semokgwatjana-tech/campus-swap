@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% import "partials/_listing_card.html" as cards %}
+{% block title %}Swap Board{% endblock %}
+{% block content %}
+<div class="container my-4">
+  <div class="neu-surface p-4 mb-4 text-center">
+    <h3 class="fw-bold"><i class="bi bi-arrow-left-right text-warning" aria-hidden="true"></i> Swap Board</h3>
+    <p class="text-muted-navy mb-0">Trade what you have for what you need. No money is required, unless there's a price difference to top up.</p>
+  </div>
+  <div class="row g-3">
+    {% for listing in listings %}
+    <div class="col-6 col-md-3">{{ cards.listing_card(listing) }}</div>
+    {% else %}
+    <div class="empty-state neu-card w-100"><div class="empty-icon"><i class="bi bi-arrow-left-right" aria-hidden="true"></i></div><p>No swap listings yet.</p>
+      <a href="{{ url_for('marketplace.sell') }}" class="btn-neu-primary">List something to swap</a></div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

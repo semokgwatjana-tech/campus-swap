@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Manage Users{% endblock %}
+{% block content %}
+<div class="container my-4">
+  <h3 class="fw-bold mb-4">Manage Users</h3>
+  <div class="neu-surface p-0 overflow-hidden">
+    <table class="table mb-0 align-middle">
+      <thead><tr class="text-muted-navy small"><th class="ps-4">Name</th><th>Email</th><th>Student No.</th><th>Status</th><th class="pe-4 text-end">Actions</th></tr></thead>
+      <tbody>
+        {% for u in users %}
+        <tr>
+          <td class="ps-4 fw-semibold">{{ u.full_name }}{% if u.is_admin %} <span class="badge-pill-sm">Admin</span>{% endif %}</td>
+          <td>{{ u.school_email }}</td>
+          <td>{{ u.student_number }}</td>
+          <td>
+            {% if u.is_verified %}<span class="verified-badge"><i class="bi bi-patch-check-fill" aria-hidden="true"></i> Verified</span>{% else %}<span class="text-warning small">Pending</span>{% endif %}
+            {% if not u.is_active_account %}<span class="text-danger small ms-2">Suspended</span>{% endif %}
+          </td>
+          <td class="pe-4 text-end">
+            {% if not u.is_verified %}
+            <form action="{{ url_for('admin.verify_user', user_id=u.id) }}" method="POST" class="d-inline">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+              <button class="btn-neu btn-sm" type="submit"><i class="bi bi-patch-check" aria-hidden="true"></i> Verify</button>
+            </form>
+            {% endif %}
+            <form action="{{ url_for('admin.suspend_user', user_id=u.id) }}" method="POST" class="d-inline">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+              <button class="btn-neu-danger btn-sm" type="submit">{{ "Reinstate" if not u.is_active_account else "Suspend" }}</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

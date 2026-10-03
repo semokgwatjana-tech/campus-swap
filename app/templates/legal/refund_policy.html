@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}Refund Policy{% endblock %}
+{% block content %}
+<div class="container my-4 my-md-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-9">
+      <div class="neu-surface p-4 p-md-5 legal-page">
+        <h1 class="fw-bold mb-1">Refund Policy</h1>
+        <p class="text-muted-navy mb-4">Last updated: [INSERT DATE].</p>
+
+        <h2 class="h5 fw-bold mt-4">1. Campus Swap is a peer-to-peer marketplace</h2>
+        <p>
+          When you buy an item on Campus Swap, you are buying it from another student, not from
+          Campus Swap itself. We process the payment and hold the item in reserve for you, but the
+          seller is responsible for the item's condition and for handing it over as described. This
+          policy explains what happens at each stage of a transaction.
+        </p>
+
+        <h2 class="h5 fw-bold mt-4">2. Before payment succeeds</h2>
+        <p>
+          When you choose to buy an item, it is temporarily reserved so no one else can purchase it
+          while you complete checkout. If your payment is declined, or you cancel before paying, the
+          reservation is released automatically and you are not charged.
+        </p>
+
+        <h2 class="h5 fw-bold mt-4">3. After payment succeeds, before pickup</h2>
+        <p>
+          Once payment succeeds, the transaction status becomes PAID and the seller is notified to
+          prepare the item for handover at one of the safe campus pickup points. If the seller does
+          not show up, cancels, or the item turns out to be materially different from the listing,
+          you can raise a dispute from your purchase history. An administrator will review the
+          dispute and may authorise a full or partial refund back to your original payment method.
+        </p>
+
+        <h2 class="h5 fw-bold mt-4">4. After the exchange is completed</h2>
+        <p>
+          Once both parties confirm the handover took place, the transaction is marked COMPLETED.
+          Refund requests after completion are handled case by case through the dispute process and
+          are not automatic, in the same way a private, in-person sale between two individuals
+          would normally work. Nothing in this section limits any right you may have under the
+          Consumer Protection Act 68 of 2008 that cannot lawfully be excluded.
+        </p>
+
+        <h2 class="h5 fw-bold mt-4">5. How to raise a dispute</h2>
+        <p>As a buyer, you can report:</p>
+        <ul>
+          <li>the item was not received;</li>
+          <li>the item was significantly different from the listing;</li>
+          <li>the seller cancelled after payment; or</li>
+          <li>another transaction problem.</li>
+        </ul>
+        <p>As a seller, you can report:</p>
+        <ul>
+          <li>the buyer did not arrive for pickup;</li>
+          <li>the buyer cancelled; or</li>
+          <li>another transaction problem.</li>
+        </ul>
+        <p>
+          Open the transaction from "My Purchases" or "My Sales" and select "Report a Problem" to
+          submit a dispute. An administrator will review the details from both sides before making
+          a decision.
+        </p>
+
+        <h2 class="h5 fw-bold mt-4">6. Refund timing and method</h2>
+        <p>
+          Where a refund is approved, it is returned to the original payment method used at
+          checkout. Processing time depends on the payment method and, once a live payment provider
+          is connected, on that provider's own settlement timelines. In this demo build, the
+          payment gateway is a sandbox simulation, so no real funds are moved.
+        </p>
+
+        <h2 class="h5 fw-bold mt-4">7. Donations and swaps</h2>
+        <p>
+          Donations are provided for free and are not refundable, since no payment is made. Swaps
+          without a cash top-up involve no payment and therefore no refund process; if a swap
+          included a cash top-up, only that top-up amount is eligible for a dispute-based refund
+          under this policy.
+        </p>
+
+        <h2 class="h5 fw-bold mt-4">8. Service fees</h2>
+        <p>
+          Where a Campus Swap service fee applies, it is shown to you in full before you confirm
+          payment. If a transaction is fully refunded due to a valid dispute, the associated service
+          fee is refunded along with it.
+        </p>
+
+        <div class="neu-card mt-4">
+          <p class="mb-0 small text-muted-navy">
+            This document is a starting template and does not constitute legal advice. Before
+            launching commercially, have it reviewed by a South African attorney to confirm it
+            complies with the Consumer Protection Act 68 of 2008 and any requirements specific to
+            your chosen payment provider.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

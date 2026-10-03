@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Manage Listings{% endblock %}
+{% block content %}
+<div class="container my-4">
+  <h3 class="fw-bold mb-4">Manage Listings</h3>
+  <div class="neu-surface p-0 overflow-hidden">
+    <table class="table mb-0 align-middle">
+      <thead><tr class="text-muted-navy small"><th class="ps-4">Title</th><th>Seller</th><th>Status</th><th class="pe-4 text-end">Actions</th></tr></thead>
+      <tbody>
+        {% for l in listings %}
+        <tr>
+          <td class="ps-4 fw-semibold"><a href="{{ url_for('marketplace.listing_detail', listing_id=l.id) }}" class="text-reset">{{ l.title }}</a></td>
+          <td>{{ l.seller.full_name }}</td>
+          <td><span class="status-pill status-{{ l.status.value|upper }}">{{ l.status.value|replace('_',' ')|title }}</span></td>
+          <td class="pe-4 text-end">
+            {% if l.status.value != "active" %}
+            <form action="{{ url_for('admin.approve_listing', listing_id=l.id) }}" method="POST" class="d-inline">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+              <button class="btn-neu btn-sm" type="submit">Approve</button>
+            </form>
+            {% endif %}
+            <form action="{{ url_for('admin.remove_listing', listing_id=l.id) }}" method="POST" class="d-inline">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+              <button class="btn-neu-danger btn-sm" type="submit">Remove</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

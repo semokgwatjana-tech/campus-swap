@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Edit Profile{% endblock %}
+{% block content %}
+<div class="container my-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-6">
+      <div class="neu-surface p-4 p-md-5">
+        <h3 class="fw-bold mb-4">Edit Your Profile</h3>
+        <form method="POST" enctype="multipart/form-data">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+          <div class="mb-3"><label class="form-label">Course</label>
+            <input type="text" name="course" class="form-control neu-input" value="{{ current_user.profile.course or '' }}"></div>
+          <div class="mb-3"><label class="form-label">Year of Study</label>
+            <select name="year_of_study" class="form-select neu-input">
+              {% for y in ["1st Year","2nd Year","3rd Year","4th Year","Honours","Masters","PhD"] %}
+              <option value="{{ y }}" {{ "selected" if current_user.profile.year_of_study == y }}>{{ y }}</option>
+              {% endfor %}
+            </select></div>
+          <div class="mb-3"><label class="form-label">Campus</label>
+            <select name="campus" class="form-select neu-input">
+              {% for c in ["Main Campus","North Campus","South Campus","City Campus","Engineering Campus","Health Sciences Campus"] %}
+              <option value="{{ c }}" {{ "selected" if current_user.profile.campus == c }}>{{ c }}</option>
+              {% endfor %}
+            </select></div>
+          <div class="mb-3"><label class="form-label">Bio</label>
+            <textarea name="bio" class="form-control neu-input" rows="3">{{ current_user.profile.bio or '' }}</textarea></div>
+          <div class="mb-3"><label class="form-label">Profile Picture</label>
+            <input type="file" name="profile_picture" class="form-control neu-input" accept="image/*"></div>
+          <button type="submit" class="btn-neu-primary w-100"><i class="bi bi-check-lg" aria-hidden="true"></i> Save Changes</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

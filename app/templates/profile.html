@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% import "partials/_listing_card.html" as cards %}
+{% block title %}{{ profile_user.full_name }}{% endblock %}
+{% block content %}
+<div class="container my-4">
+  <div class="neu-surface p-4 mb-4">
+    <div class="row align-items-center g-4">
+      <div class="col-auto">
+        <img src="{{ url_for('static', filename='uploads/profiles/' ~ profile_user.profile.profile_picture) if profile_user.profile.profile_picture != 'default_avatar.png' else url_for('static', filename='img/default_avatar.svg') }}"
+             class="avatar-circle" style="width:110px;height:110px;border-radius:28px;" alt="{{ profile_user.full_name }}"
+             onerror="this.src='{{ url_for('static', filename='img/default_avatar.svg') }}'">
+      </div>
+      <div class="col">
+        <h3 class="fw-bold mb-1 d-flex align-items-center gap-2">
+          {{ profile_user.full_name }}
+          {% if profile_user.is_verified %}<span class="verified-badge"><i class="bi bi-patch-check-fill" aria-hidden="true"></i> Verified Student</span>{% endif %}
+        </h3>
+        <p class="text-muted-navy mb-2">{{ profile_user.profile.course or "" }} {% if profile_user.profile.year_of_study %}· {{ profile_user.profile.year_of_study }}{% endif %} · {{ profile_user.profile.campus or "" }}</p>
+        {% if profile_user.profile.bio %}<p class="mb-2">{{ profile_user.profile.bio }}</p>{% endif %}
+        <div class="d-flex flex-wrap gap-2">
+          {% if profile_user.average_rating %}<span class="neu-pill trust-stars"><i class="bi bi-star-fill" aria-hidden="true"></i> {{ profile_user.average_rating }} ({{ reviews|length }} review{{ 's' if reviews|length != 1 }})</span>{% endif %}
+          {% for ub in badges %}<span class="badge-pill-sm"><i class="bi {{ ub.badge.icon }}" aria-hidden="true"></i> {{ ub.badge.name }}</span>{% endfor %}
+        </div>
+      </div>
+      {% if current_user.is_authenticated and current_user.id == profile_user.id %}
+      <div class="col-auto"><a href="{{ url_for('main.edit_profile') }}" class="btn-neu"><i class="bi bi-pencil" aria-hidden="true"></i> Edit Profile</a></div>
+      {% endif %}
+    </div>
+  </div>
+
+  <h5 class="fw-bold mb-3">Active Listings</h5>
+  <div class="row g-3 mb-4">
+    {% for listing in listings %}
+    <div class="col-6 col-md-3">{{ cards.listing_card(listing) }}</div>
+    {% else %}
+    <p class="text-muted-navy">No active listings.</p>
+    {% endfor %}
+  </div>
+
+  <h5 class="fw-bold mb-3">Reviews</h5>
+  <div class="row g-3">
+    {% for r in reviews %}
+    <div class="col-md-6">
+      <div class="neu-card">
+        <div class="d-flex justify-content-between">
+          <span class="fw-semibold">{{ r.reviewer.full_name }}</span>
+          <span class="trust-stars">{% for i in range(r.rating) %}<i class="bi bi-star-fill" aria-hidden="true"></i>{% endfor %}</span>
+        </div>
+        {% if r.comment %}<p class="small text-muted-navy mt-2 mb-0">{{ r.comment }}</p>{% endif %}
+      </div>
+    </div>
+    {% else %}
+    <p class="text-muted-navy">No reviews yet.</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

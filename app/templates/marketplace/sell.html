@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% import "partials/_form_macros.html" as f %}
+{% block title %}{{ "Edit Listing" if editing else "Sell / Swap / Donate" }}{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="neu-surface p-4 p-md-5">
+        <h3 class="fw-bold mb-1">{{ "Edit Your Listing" if editing else "List a Resource" }}</h3>
+        <p class="text-muted-navy mb-4">Sell it, swap it, or donate it. Reach students on your campus in minutes.</p>
+
+        <form method="POST" enctype="multipart/form-data" id="sellForm">
+          {{ form.hidden_tag() }}
+
+          {{ f.field(form.title, placeholder="e.g. Financial Accounting 101, 5th Edition") }}
+
+          <div class="mb-3">
+            <label class="form-label">I want to</label>
+            <div class="row g-2">
+              {% for value, label in [("sell","Sell it"), ("swap","Swap it"), ("donate","Donate it")] %}
+              <div class="col-4">
+                <label class="payment-method-option w-100 d-block {{ 'selected' if form.listing_type.data == value }}">
+                  {{ form.listing_type(value=value) if false }}
+                  <input type="radio" name="listing_type" value="{{ value }}" {{ "checked" if form.listing_type.data == value }} onchange="toggleListingType(this.value)">
+                  <div>{{ label }}</div>
+                </label>
+              </div>
+              {% endfor %}
+            </div>
+            {% if form.listing_type.errors %}<div class="text-danger small mt-1">{{ form.listing_type.errors[0] }}</div>{% endif %}
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">{{ f.select_field(form.category_id) }}</div>
+            <div class="col-md-6">{{ f.select_field(form.condition) }}</div>
+          </div>
+
+          <div id="priceGroup" class="row align-items-end">
+            <div class="col-md-8">{{ f.field(form.price, placeholder="e.g. 250") }}</div>
+            <div class="col-md-4 mb-3">
+              <button type="button" class="btn-neu w-100" onclick="suggestPrice()">
+                <i class="bi bi-magic" aria-hidden="true"></i> AI Price Suggestion
+              </button>
+            </div>
+          </div>
+          <div id="aiPriceBox" class="ai-suggestion-box mb-3 d-none">
+            <div class="fw-bold small mb-1"><i class="bi bi-stars" aria-hidden="true"></i> Suggested price: R<span id="aiPriceValue">0</span></div>
+            <div class="small text-muted-navy" id="aiPriceRange"></div>
+            <ul class="small text-muted-navy mb-0 mt-1" id="aiPriceBasis"></ul>
+          </div>
+
+          <div id="swapGroup" class="d-none">
+            {{ f.field(form.swap_for, placeholder="e.g. Physics 1A textbook, or a scientific calculator") }}
+          </div>
+
+          {{ f.field(form.description, extra_class="", placeholder="Describe the item's condition, edition, module code, and any notes.") }}
+          <textarea class="d-none"></textarea>
+
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <label class="form-label mb-0">Photos</label>
+            <button type="button" class="btn-neu btn-sm" onclick="generateFromPhoto()">
+              <i class="bi bi-magic" aria-hidden="true"></i> AI Listing Generator
+            </button>
+          </div>
+          {{ form.photos(class="form-control neu-input mb-1") }}
+          <p class="small text-muted-navy mb-3">Upload a clear photo. The AI Listing Generator can draft a title and description for you to edit.</p>
+          <div id="aiListingBox" class="ai-suggestion-box mb-3 d-none"></div>
+
+          <div class="row">
+            <div class="col-md-6">{{ f.select_field(form.campus) }}</div>
+          </div>
+
+          <div class="d-flex gap-2 mt-4">
+            <button type="submit" class="btn-neu-primary flex-grow-1"><i class="bi bi-eye" aria-hidden="true"></i> Preview &amp; Publish</button>
+            <a href="{{ url_for('marketplace.browse') }}" class="btn-neu">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function toggleListingType(value) {
+  document.getElementById('priceGroup').classList.toggle('d-none', value !== 'sell');
+  document.getElementById('swapGroup').classList.toggle('d-none', value !== 'swap');
+}
+toggleListingType(document.querySelector('input[name="listing_type"]:checked')?.value || 'sell');
+
+function suggestPrice() {
+  const category = document.getElementById('category_id');
+  const condition = document.getElementById('condition');
+  const title = document.getElementById('title');
+  const params = new URLSearchParams({
+    category: category.options[category.selectedIndex]?.text?.toLowerCase().replace(/ /g,'-') || 'textbooks',
+    condition: condition.value,
+    title: title.value
+  });
+  fetch("{{ url_for('marketplace.api_suggest_price') }}?" + params.toString())
+    .then(r => r.json())
+    .then(data => {
+      document.getElementById('price').value = data.suggested_price;
+      document.getElementById('aiPriceValue').textContent = data.suggested_price;
+      document.getElementById('aiPriceRange').textContent = `Typical range: R${data.price_range_low} – R${data.price_range_high}`;
+      const list = document.getElementById('aiPriceBasis');
+      list.innerHTML = data.based_on.map(b => `<li>${b}</li>`).join('');
+      document.getElementById('aiPriceBox').classList.remove('d-none');
+    });
+}
+
+function generateFromPhoto() {
+  const fd = new FormData();
+  fd.append('csrf_token', document.querySelector('input[name=csrf_token]').value);
+  fd.append('hint_text', document.getElementById('title').value);
+  fetch("{{ url_for('marketplace.api_generate_listing') }}", { method: 'POST', body: fd })
+    .then(r => r.json())
+    .then(data => {
+      document.getElementById('title').value = data.title;
+      document.getElementById('description').value = data.description;
+      const box = document.getElementById('aiListingBox');
+      box.innerHTML = `<div class="fw-bold small mb-1"><i class="bi bi-stars" aria-hidden="true"></i> AI-generated draft applied</div>
+        <div class="small text-muted-navy">Keywords: ${data.keywords.join(', ')}</div>
+        <div class="small text-muted-navy mt-1">${data.note}</div>`;
+      box.classList.remove('d-none');
+    });
+}
+</script>
+{% endblock %}

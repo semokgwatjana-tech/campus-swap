@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}My Sales{% endblock %}
+{% block content %}
+<div class="container my-4">
+  <h3 class="fw-bold mb-4">My Sales</h3>
+  {% if sales %}
+  <div class="neu-surface p-0 overflow-hidden">
+    <table class="table mb-0 align-middle">
+      <thead><tr class="text-muted-navy small"><th class="ps-4">Item</th><th>Buyer</th><th>Amount</th><th>Date</th><th>Status</th><th class="pe-4"></th></tr></thead>
+      <tbody>
+        {% for t in sales %}
+        <tr>
+          <td class="ps-4 fw-semibold">{{ t.listing.title }}</td>
+          <td>{{ t.buyer.full_name }}</td>
+          <td>{{ currency }}{{ "%.2f"|format(t.total_amount) }}</td>
+          <td>{{ t.created_at.strftime('%d %b %Y') }}</td>
+          <td><span class="status-pill status-{{ t.status.value }}">{{ t.status_label() }}</span></td>
+          <td class="pe-4"><a href="{{ url_for('transactions.sale_detail', transaction_id=t.id) }}" class="btn-neu btn-sm">View</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state neu-card"><div class="empty-icon"><i class="bi bi-cash-coin" aria-hidden="true"></i></div><p>No sales yet.</p>
+    <a href="{{ url_for('marketplace.sell') }}" class="btn-neu-primary">List something to sell</a></div>
+  {% endif %}
+</div>
+{% endblock %}

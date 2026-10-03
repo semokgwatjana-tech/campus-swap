@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% import "partials/_form_macros.html" as forms %}
+{% block title %}Log In{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-5">
+      <div class="neu-surface p-4 p-md-5">
+        <div class="text-center mb-4">
+          <span class="brand-badge d-inline-flex" style="width:56px;height:56px;font-size:1.3rem;">CS</span>
+          <h2 class="fw-bold mt-3">Welcome back</h2>
+          <p class="text-muted-navy">Log in to buy, sell, swap, and donate.</p>
+        </div>
+        <form method="POST" novalidate>
+          {{ form.hidden_tag() }}
+          {{ forms.field(form.school_email, placeholder="you@myschool.ac.za") }}
+          {{ forms.field(form.password, placeholder="Your password") }}
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            {{ forms.checkbox_field(form.remember_me) }}
+            <a href="{{ url_for('auth.forgot_password') }}" class="small">Forgot password?</a>
+          </div>
+          <button type="submit" class="btn-neu-primary w-100">Log In</button>
+        </form>
+        <p class="text-center mt-4 mb-0 small">New to Campus Swap? <a href="{{ url_for('auth.register') }}">Create an account</a></p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

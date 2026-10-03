@@ -1,0 +1,16 @@
+{
+  "appId": "za.co.campusswap.app",
+  "appName": "Campus Swap",
+  "webDir": "www",
+  "bundledWebRuntime": false,
+  "server": {
+    "url": "https://REPLACE-WITH-YOUR-DEPLOYED-DOMAIN.example.com",
+    "cleartext": false
+  },
+  "android": {
+    "allowMixedContent": false
+  },
+  "ios": {
+    "contentInset": "automatic"
+  }
+}

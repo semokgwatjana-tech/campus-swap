@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Platform Settings{% endblock %}
+{% block content %}
+<div class="container my-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-6">
+      <div class="neu-surface p-4 p-md-5">
+        <h3 class="fw-bold mb-4">Platform Settings</h3>
+        <form method="POST">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+          <div class="mb-3">
+            <label class="form-label">Service fee (%)</label>
+            <input type="number" step="0.1" min="0" name="service_fee_percent" class="form-control neu-input" value="{{ fee_percent }}">
+            <p class="small text-muted-navy mt-1">Applied to every sale, e.g. R200 item + {{ fee_percent }}% fee. Keep this low to prioritise affordability.</p>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Fixed service fee (R)</label>
+            <input type="number" step="0.5" min="0" name="service_fee_fixed" class="form-control neu-input" value="{{ fee_fixed }}">
+          </div>
+          <button type="submit" class="btn-neu-primary w-100"><i class="bi bi-check-lg" aria-hidden="true"></i> Save Settings</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

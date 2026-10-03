@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}My Listings{% endblock %}
+{% block content %}
+<div class="container my-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="fw-bold mb-0">My Listings</h3>
+    <a href="{{ url_for('marketplace.sell') }}" class="btn-neu-primary"><i class="bi bi-plus-lg" aria-hidden="true"></i> New Listing</a>
+  </div>
+
+  {% if listings %}
+  <div class="neu-surface p-0 overflow-hidden">
+    <table class="table mb-0 align-middle">
+      <thead><tr class="text-muted-navy small"><th class="ps-4">Item</th><th>Type</th><th>Price</th><th>Status</th><th>Views</th><th class="pe-4 text-end">Actions</th></tr></thead>
+      <tbody>
+        {% for listing in listings %}
+        <tr>
+          <td class="ps-4">
+            <a href="{{ url_for('marketplace.listing_detail', listing_id=listing.id) }}" class="text-reset fw-semibold text-decoration-none">
+              {{ listing.title }}
+            </a>
+          </td>
+          <td><span class="listing-type-badge {{ listing.listing_type.value }} condition-badge">{{ listing.listing_type.value|capitalize }}</span></td>
+          <td>{% if listing.listing_type.value == "sell" %}{{ currency }}{{ "%.0f"|format(listing.price) }}{% elif listing.listing_type.value == "donate" %}Free{% else %}Swap{% endif %}</td>
+          <td><span class="status-pill status-{{ listing.status.value|upper }}">{{ listing.status.value|replace('_',' ')|title }}</span></td>
+          <td>{{ listing.views_count }}</td>
+          <td class="pe-4 text-end">
+            <a href="{{ url_for('marketplace.edit_listing', listing_id=listing.id) }}" class="btn-neu btn-sm"><i class="bi bi-pencil" aria-hidden="true"></i></a>
+            <form action="{{ url_for('marketplace.delete_listing', listing_id=listing.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Remove this listing?')">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+              <button class="btn-neu-danger btn-sm" type="submit"><i class="bi bi-trash" aria-hidden="true"></i></button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state neu-card"><div class="empty-icon"><i class="bi bi-box-seam" aria-hidden="true"></i></div><p>You haven't listed anything yet.</p>
+    <a href="{{ url_for('marketplace.sell') }}" class="btn-neu-primary">Create your first listing</a></div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Sale: {{ transaction.reference }}{% endblock %}
+{% block content %}
+<div class="container my-4">
+  <div class="neu-surface p-4 p-md-5 receipt-card">
+    <h4 class="fw-bold mb-1">{{ transaction.listing.title }}</h4>
+    <span class="status-pill status-{{ transaction.status.value }} mb-3 d-inline-flex">{{ transaction.status_label() }}</span>
+    <div class="neu-inset p-3 my-3">
+      <div class="receipt-row"><span>Reference</span><span>{{ transaction.reference }}</span></div>
+      <div class="receipt-row"><span>Buyer</span><span>{{ transaction.buyer.full_name }}</span></div>
+      <div class="receipt-row"><span>Amount</span><span>{{ currency }}{{ "%.2f"|format(transaction.total_amount) }}</span></div>
+      <div class="receipt-row"><span>Pickup location</span><span>{{ transaction.pickup_location or "N/A" }}</span></div>
+      <div class="receipt-row"><span>Date</span><span>{{ transaction.created_at.strftime('%d %b %Y, %H:%M') }}</span></div>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+      {% if transaction.status.value == "PAID" %}
+      <form action="{{ url_for('transactions.mark_ready_for_pickup', transaction_id=transaction.id) }}" method="POST" class="flex-grow-1">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        <button class="btn-neu-primary w-100" type="submit"><i class="bi bi-box-seam" aria-hidden="true"></i> Mark Ready for Pickup</button>
+      </form>
+      {% endif %}
+      {% if transaction.status.value in ["PAID", "READY_FOR_PICKUP"] %}
+      <form action="{{ url_for('transactions.complete_transaction', transaction_id=transaction.id) }}" method="POST" class="flex-grow-1">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        <button class="btn-neu w-100" type="submit"><i class="bi bi-check2-circle" aria-hidden="true"></i> Confirm Handover Complete</button>
+      </form>
+      {% endif %}
+      <a href="{{ url_for('transactions.receipt', transaction_id=transaction.id) }}" class="btn-neu flex-grow-1 text-center">View Full Receipt</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

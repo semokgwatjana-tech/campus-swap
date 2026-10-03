@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% import "partials/_listing_card.html" as cards %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+    <div>
+      <div class="dashboard-greeting">{{ greeting }}, {{ current_user.full_name.split(' ')[0] }}</div>
+      <p class="text-muted-navy mb-0">
+        {% if current_user.is_verified %}
+          <span class="verified-badge"><i class="bi bi-patch-check-fill" aria-hidden="true"></i> Verified Student</span>
+        {% else %}
+          <span class="text-warning small"><i class="bi bi-hourglass-split" aria-hidden="true"></i> Verification pending</span>
+        {% endif %}
+      </p>
+    </div>
+    <div class="d-flex gap-3 mt-3 mt-md-0">
+      <div class="neu-card text-center py-2 px-3"><div class="fw-bold">{{ my_active_listings }}</div><div class="small text-muted-navy">Listings</div></div>
+      <div class="neu-card text-center py-2 px-3"><div class="fw-bold">{{ my_completed_sales }}</div><div class="small text-muted-navy">Sales</div></div>
+      <div class="neu-card text-center py-2 px-3"><div class="fw-bold">{{ current_user.average_rating or "N/A" }}</div><div class="small text-muted-navy">Rating</div></div>
+    </div>
+  </div>
+
+  <!-- Search -->
+  <form action="{{ url_for('marketplace.browse') }}" method="GET" class="neu-inset p-3 mb-4 d-flex gap-2">
+    <input type="text" name="q" class="form-control neu-input border-0 bg-transparent shadow-none" placeholder='Try "first year Accounting books"'>
+    <button class="btn-neu-primary" type="submit"><i class="bi bi-search" aria-hidden="true"></i> Search</button>
+  </form>
+
+  <!-- Quick actions -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+      <a href="{{ url_for('marketplace.sell') }}" class="quick-action text-decoration-none">
+        <span class="qa-icon qa-sell"><i class="bi bi-tag" aria-hidden="true"></i></span> Sell
+      </a>
+    </div>
+    <div class="col-6 col-md-3">
+      <a href="{{ url_for('marketplace.sell') }}?type=donate" class="quick-action text-decoration-none">
+        <span class="qa-icon qa-donate"><i class="bi bi-heart" aria-hidden="true"></i></span> Donate
+      </a>
+    </div>
+    <div class="col-6 col-md-3">
+      <a href="{{ url_for('marketplace.swap_board') }}" class="quick-action text-decoration-none">
+        <span class="qa-icon qa-swap"><i class="bi bi-arrow-left-right" aria-hidden="true"></i></span> Swap
+      </a>
+    </div>
+    <div class="col-6 col-md-3">
+      <a href="{{ url_for('main.wishlist') }}" class="quick-action text-decoration-none">
+        <span class="qa-icon qa-wishlist"><i class="bi bi-heart-fill" aria-hidden="true"></i></span> Wishlist
+      </a>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-lg-8">
+
+      <!-- Popular categories -->
+      <h5 class="fw-bold mb-3">Popular Categories</h5>
+      <div class="row row-cols-4 row-cols-md-8 g-2 mb-4">
+        {% for cat in categories %}
+        <div class="col">
+          <a href="{{ url_for('marketplace.browse', category=cat.slug) }}" class="category-chip text-decoration-none">
+            <span class="cat-icon"><i class="bi {{ cat.icon }}" aria-hidden="true"></i></span>
+            {{ cat.name }}
+          </a>
+        </div>
+        {% endfor %}
+      </div>
+
+      <!-- Recommended -->
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="fw-bold mb-0">Recommended For You</h5>
+        <a href="{{ url_for('marketplace.browse') }}" class="small">See all <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+      </div>
+      <div class="row g-3 mb-4">
+        {% for listing in recommended %}
+        <div class="col-6 col-md-3">{{ cards.listing_card(listing) }}</div>
+        {% else %}
+        <p class="text-muted-navy">No recommendations yet - browse the marketplace to get started!</p>
+        {% endfor %}
+      </div>
+
+      <!-- Latest listings -->
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="fw-bold mb-0">Latest Listings</h5>
+        <a href="{{ url_for('marketplace.browse', sort='newest') }}" class="small">See all <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+      </div>
+      <div class="row g-3">
+        {% for listing in latest %}
+        <div class="col-6 col-md-3">{{ cards.listing_card(listing) }}</div>
+        {% else %}
+        <p class="text-muted-navy">Nothing posted yet on your campus - be the first!</p>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <!-- Recent messages -->
+      <div class="neu-card mb-4">
+        <h6 class="fw-bold mb-3"><i class="bi bi-chat-dots me-1" aria-hidden="true"></i> Recent Messages</h6>
+        {% for convo in conversations %}
+        <a href="{{ url_for('messaging.conversation', conversation_id=convo.id) }}" class="d-flex align-items-center gap-2 conversation-list-item text-decoration-none text-reset">
+          <div class="avatar-circle d-flex align-items-center justify-content-center bg-white fw-bold">
+            {{ (convo.other_participant(current_user.id))|string|first }}
+          </div>
+          <div class="flex-grow-1">
+            <div class="small fw-semibold">{{ convo.listing.title if convo.listing else "Conversation" }}</div>
+            <div class="small text-muted-navy text-truncate" style="max-width:180px;">
+              {{ convo.last_message.body if convo.last_message and convo.last_message.body else "No messages yet" }}
+            </div>
+          </div>
+        </a>
+        {% else %}
+        <p class="small text-muted-navy mb-0">No conversations yet.</p>
+        {% endfor %}
+        <a href="{{ url_for('messaging.inbox') }}" class="small d-block mt-2">View all messages <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+      </div>
+
+      <!-- Notifications -->
+      <div class="neu-card">
+        <h6 class="fw-bold mb-3"><i class="bi bi-bell me-1" aria-hidden="true"></i> Notifications</h6>
+        {% for n in notifications %}
+        <div class="mb-2 pb-2 border-bottom border-light-subtle">
+          <div class="small fw-semibold">{{ n.title }}</div>
+          {% if n.body %}<div class="small text-muted-navy">{{ n.body }}</div>{% endif %}
+        </div>
+        {% else %}
+        <p class="small text-muted-navy mb-0">You're all caught up!</p>
+        {% endfor %}
+        <a href="{{ url_for('main.notifications') }}" class="small d-block mt-2">View all <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

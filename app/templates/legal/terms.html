@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+{% block title %}Terms & Conditions{% endblock %}
+{% block content %}
+<div class="container my-4 my-md-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-9">
+      <div class="neu-surface p-4 p-md-5 legal-page">
+        <h1 class="fw-bold mb-1">Terms &amp; Conditions</h1>
+        <p class="text-muted-navy mb-4">Last updated: [INSERT DATE]. Effective for all accounts created on or after this date.</p>
+
+        <div class="neu-card mb-4">
+          <p class="mb-0 small">
+            <strong>Plain-language summary:</strong> Campus Swap is a platform that lets verified
+            students at participating campuses list, buy, swap, and donate educational resources
+            with each other. We facilitate the connection and the payment step; the actual item
+            and its condition remain the responsibility of the student who listed it. Read the
+            full terms below before creating an account.
+          </p>
+        </div>
+
+        <h2 id="who-we-are" class="h5 fw-bold mt-4">1. Who operates Campus Swap</h2>
+        <p>
+          Campus Swap is operated by [INSERT REGISTERED COMPANY NAME], a company registered in
+          South Africa under registration number [INSERT COMPANY REGISTRATION NUMBER], with its
+          registered address at [INSERT PHYSICAL BUSINESS ADDRESS]. You can contact us at
+          [INSERT SUPPORT EMAIL] for any question about these Terms.
+        </p>
+
+        <h2 class="h5 fw-bold mt-4">2. Eligibility and account registration</h2>
+        <p>You may create an account if you:</p>
+        <ul>
+          <li>are currently enrolled at a participating educational institution;</li>
+          <li>register using a valid school-issued email address;</li>
+          <li>are at least 18 years old, or have the legal capacity to enter into a binding
+            agreement in your jurisdiction; and</li>
+          <li>provide accurate registration information, including your real name and student
+            number, which we use solely to confirm your student status.</li>
+        </ul>
+        <p>
+          Accounts are personal to you and may not be transferred or shared. You are responsible
+          for keeping your password confidential and for all activity that occurs under your
+          account.
+        </p>
+
+        <h2 class="h5 fw-bold mt-4">3. What you can list and trade</h2>
+        <p>
+          Campus Swap is intended for educational resources: textbooks, past papers, notes,
+          calculators, laboratory equipment, uniforms, stationery, laptops, study furniture, and
+          similar items. You may not list:
+        </p>
+        <ul>
+          <li>counterfeit, stolen, or illegal goods;</li>
+          <li>items that infringe someone else's copyright or trademark;</li>
+          <li>weapons, alcohol, tobacco, or controlled substances;</li>
+          <li>services unrelated to the educational-resource purpose of the platform; or</li>
+          <li>anything that would violate the rules of your institution.</li>
+        </ul>
+        <p>
+          You are solely responsible for the accuracy of your listings, including the condition
+          and description of the item. Campus Swap does not inspect items before they are listed
+          or exchanged.
+        </p>
+
+        <h2 class="h5 fw-bold mt-4">4. Payments, swaps, and donations</h2>
+        <p>
+          Paid transactions are processed through the payment method described at checkout. Campus
+          Swap may apply a service fee, which is shown to you in full before you confirm payment.
+          Card details are never stored by Campus Swap. Donations are provided free of charge by
+          the donor, and swaps may include a cash top-up to account for a difference in value; only
+          that difference is processed as a payment. See our
+          <a href="{{ url_for('main.refund_policy') }}">Refund Policy</a> for what happens when a
+          transaction does not go as planned.
+        </p>
+        <p>
+          Campus Swap acts as a facilitator between students. We are not the seller of any item
+          listed by another user, and ownership of the item transfers directly between the buyer
+          and the seller.
+        </p>
+
+        <h2 id="safe-exchanges" class="h5 fw-bold mt-4">5. Safe exchanges</h2>
+        <p>
+          For your safety, exchanges should take place at one of the designated public campus
+          locations offered during checkout (for example, the library, student centre, or campus
+          security office). Do not share your home address with other users through the platform.
+          Campus Swap is not responsible for what happens during an in-person exchange, but we do
+          provide reporting and dispute tools if something goes wrong.
+        </p>
+
+        <h2 class="h5 fw-bold mt-4">6. Reviews, ratings, and conduct</h2>
+        <p>
+          Reviews may only be left after a completed transaction between the two parties involved,
+          and must reflect a genuine experience. Fabricated reviews, harassment, hate speech, and
+          fraudulent behaviour are prohibited and may result in suspension or termination of your
+          account.
+        </p>
+
+        <h2 class="h5 fw-bold mt-4">7. Content you post</h2>
+        <p>
+          You retain ownership of the photos, descriptions, and messages you post. By posting
+          content, you grant Campus Swap a limited licence to display that content on the
+          platform for the purpose of operating the marketplace. You confirm that you have the
+          right to post any photo or content you upload, and that it does not infringe on anyone
+          else's copyright.
+        </p>
+
+        <h2 class="h5 fw-bold mt-4">8. Suspension and termination</h2>
+        <p>
+          We may suspend or terminate an account that violates these Terms, provides false
+          verification information, or is used for fraudulent or unsafe conduct. You may close
+          your account at any time by contacting us at [INSERT SUPPORT EMAIL].
+        </p>
+
+        <h2 class="h5 fw-bold mt-4">9. Limitation of liability</h2>
+        <p>
+          To the maximum extent permitted by South African law, Campus Swap is not liable for
+          losses arising from transactions between users, the condition of items exchanged, or
+          conduct during an in-person meetup. Nothing in these Terms limits any right you have
+          under the Consumer Protection Act 68 of 2008 that cannot lawfully be excluded.
+        </p>
+
+        <h2 class="h5 fw-bold mt-4">10. Governing law</h2>
+        <p>
+          These Terms are governed by the laws of the Republic of South Africa, including the
+          Electronic Communications and Transactions Act 25 of 2002 and the Consumer Protection
+          Act 68 of 2008, without regard to conflict-of-law principles.
+        </p>
+
+        <h2 class="h5 fw-bold mt-4">11. Changes to these Terms</h2>
+        <p>
+          We may update these Terms from time to time. If we make a material change, we will
+          notify active users by email or by an in-app notice before the change takes effect.
+        </p>
+
+        <div class="neu-card mt-4">
+          <p class="mb-0 small text-muted-navy">
+            This document is a starting template and does not constitute legal advice. Before
+            launching commercially, have it reviewed by a South African attorney to confirm it
+            meets your specific obligations under POPIA, the Consumer Protection Act, and the
+            Electronic Communications and Transactions Act.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

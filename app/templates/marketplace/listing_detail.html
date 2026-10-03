@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+{% import "partials/_listing_card.html" as cards %}
+{% block title %}{{ listing.title }}{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+  <div class="row g-4">
+    <div class="col-lg-7">
+      <div class="gallery-main mb-3">
+        {% if listing.images %}
+        <img src="{{ url_for('static', filename='uploads/' ~ listing.primary_image) }}"
+             onerror="this.src='{{ url_for('static', filename='uploads/listings/placeholder.png') }}'" alt="{{ listing.title }}">
+        {% else %}
+        <img src="{{ url_for('static', filename='uploads/listings/placeholder.png') }}" alt="{{ listing.title }}">
+        {% endif %}
+      </div>
+      {% if listing.images|length > 1 %}
+      <div class="d-flex gap-2 mb-4">
+        {% for img in listing.images %}
+        <div style="width:70px;height:70px;border-radius:12px;overflow:hidden;" class="neu-card p-0">
+          <img src="{{ url_for('static', filename='uploads/' ~ img.filename) }}" style="width:100%;height:100%;object-fit:cover;" alt="{{ listing.title }} photo {{ loop.index }}">
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <div class="neu-card mb-4">
+        <h5 class="fw-bold">Description</h5>
+        <p class="text-muted-navy" style="white-space:pre-line;">{{ listing.description }}</p>
+        <div class="d-flex gap-2 flex-wrap mt-3">
+          <span class="neu-pill"><i class="bi bi-award" aria-hidden="true"></i> {{ listing.condition.value }}</span>
+          <span class="neu-pill"><i class="bi bi-geo-alt" aria-hidden="true"></i> {{ listing.campus }}</span>
+          <span class="neu-pill"><i class="bi bi-tag" aria-hidden="true"></i> {{ listing.category.name }}</span>
+          <span class="neu-pill"><i class="bi bi-calendar" aria-hidden="true"></i> Posted {{ listing.posted_at.strftime('%d %b %Y') }}</span>
+        </div>
+      </div>
+
+      {% if related %}
+      <h5 class="fw-bold mb-3">Related Items</h5>
+      <div class="row g-3">
+        {% for item in related %}
+        <div class="col-6 col-md-3">{{ cards.listing_card(item) }}</div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="col-lg-5">
+      <div class="neu-surface p-4 mb-3">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+          <span class="listing-type-badge {{ listing.listing_type.value }} condition-badge">
+            {{ "Free Donation" if listing.listing_type.value == "donate" else listing.listing_type.value|capitalize }}
+          </span>
+          <span class="status-pill status-{{ listing.status.value|upper }}">{{ listing.status.value|replace('_',' ')|title }}</span>
+        </div>
+        <h3 class="fw-bold">{{ listing.title }}</h3>
+        <div class="listing-price fs-2 mb-3">
+          {% if listing.listing_type.value == "sell" %}{{ currency }}{{ "%.2f"|format(listing.price) }}
+          {% elif listing.listing_type.value == "donate" %}Free
+          {% else %}Swap {% if listing.swap_for %}for: {{ listing.swap_for }}{% endif %}{% endif %}
+        </div>
+
+        {% if current_user.is_authenticated and listing.seller_id != current_user.id %}
+          {% if listing.listing_type.value == "sell" %}
+            {% if listing.status.value == "active" %}
+            <form action="{{ url_for('transactions.start_purchase', listing_id=listing.id) }}" method="POST" class="mb-2">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+              <button class="btn-neu-primary w-100" type="submit"><i class="bi bi-bag-check" aria-hidden="true"></i> Buy Now</button>
+            </form>
+            {% else %}
+            <button class="btn-neu w-100 mb-2" disabled>Currently Unavailable</button>
+            {% endif %}
+          {% elif listing.listing_type.value == "donate" %}
+            <form action="{{ url_for('transactions.request_donation', listing_id=listing.id) }}" method="POST" class="mb-2">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+              <input type="hidden" name="message" value="I would love to receive this item.">
+              <button class="btn-neu-primary w-100" type="submit"><i class="bi bi-heart" aria-hidden="true"></i> Request Donation</button>
+            </form>
+          {% elif listing.listing_type.value == "swap" %}
+            <a href="{{ url_for('transactions.propose_swap', listing_id=listing.id) }}" class="btn-neu-primary w-100 d-block text-center mb-2">
+              <i class="bi bi-arrow-left-right" aria-hidden="true"></i> Propose a Swap
+            </a>
+          {% endif %}
+
+          <form action="{{ url_for('messaging.start_conversation', listing_id=listing.id) }}" method="POST" class="mb-2">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            <button class="btn-neu w-100" type="submit"><i class="bi bi-chat-dots" aria-hidden="true"></i> Chat with Seller</button>
+          </form>
+
+          <div class="row g-2">
+            <div class="col-6">
+              <form action="{{ url_for('main.toggle_wishlist', listing_id=listing.id) }}" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <button class="btn-neu w-100" type="submit">
+                  <i class="bi {{ 'bi-heart-fill text-danger' if is_wishlisted else 'bi-heart' }}" aria-hidden="true"></i> Favorite
+                </button>
+              </form>
+            </div>
+            <div class="col-6">
+              <button class="btn-neu w-100" type="button" onclick="navigator.share ? navigator.share({title: '{{ listing.title }}', url: window.location.href}) : alert('Copy this link to share: ' + window.location.href)">
+                <i class="bi bi-share" aria-hidden="true"></i> Share
+              </button>
+            </div>
+          </div>
+
+          <button class="btn btn-link btn-sm text-danger mt-2" data-bs-toggle="modal" data-bs-target="#reportModal">
+            <i class="bi bi-flag" aria-hidden="true"></i> Report this listing
+          </button>
+        {% elif not current_user.is_authenticated %}
+          <a href="{{ url_for('auth.login', next=request.path) }}" class="btn-neu-primary w-100 d-block text-center">Log in to buy, swap, or message</a>
+        {% else %}
+          <div class="d-flex gap-2">
+            <a href="{{ url_for('marketplace.edit_listing', listing_id=listing.id) }}" class="btn-neu flex-grow-1 text-center"><i class="bi bi-pencil" aria-hidden="true"></i> Edit</a>
+            <form action="{{ url_for('marketplace.delete_listing', listing_id=listing.id) }}" method="POST" onsubmit="return confirm('Remove this listing?')" class="flex-grow-1">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+              <button class="btn-neu-danger w-100" type="submit"><i class="bi bi-trash" aria-hidden="true"></i> Remove</button>
+            </form>
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- Seller info -->
+      <a href="{{ url_for('main.public_profile', user_id=listing.seller.id) }}" class="text-decoration-none text-reset">
+        <div class="neu-card d-flex align-items-center gap-3">
+          <img src="{{ url_for('static', filename='uploads/profiles/' ~ listing.seller.profile.profile_picture) if listing.seller.profile.profile_picture != 'default_avatar.png' else url_for('static', filename='img/default_avatar.svg') }}"
+               class="avatar-circle avatar-circle-lg" alt="{{ listing.seller.full_name }}"
+               onerror="this.src='{{ url_for('static', filename='img/default_avatar.svg') }}'">
+          <div>
+            <div class="fw-bold d-flex align-items-center gap-2">
+              {{ listing.seller.full_name }}
+              {% if listing.seller.is_verified %}<span class="verified-badge"><i class="bi bi-patch-check-fill" aria-hidden="true"></i></span>{% endif %}
+            </div>
+            <div class="small text-muted-navy">{{ listing.seller.profile.course or "" }} · {{ listing.seller.profile.campus or "" }}</div>
+            {% if listing.seller.average_rating %}
+            <div class="small trust-stars"><i class="bi bi-star-fill" aria-hidden="true"></i> {{ listing.seller.average_rating }} rating</div>
+            {% endif %}
+          </div>
+        </div>
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Report modal -->
+<div class="modal fade" id="reportModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content neu-surface border-0">
+      <form method="POST" action="{{ url_for('marketplace.report_listing', listing_id=listing.id) }}">
+        <div class="modal-header border-0">
+          <h5 class="modal-title">Report Listing</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          {{ report_form.hidden_tag() }}
+          <div class="mb-3">
+            {{ report_form.reason.label(class="form-label") }}
+            {{ report_form.reason(class="form-select neu-input") }}
+          </div>
+          <div class="mb-3">
+            {{ report_form.details.label(class="form-label") }}
+            {{ report_form.details(class="form-control neu-input", rows=3) }}
+          </div>
+        </div>
+        <div class="modal-footer border-0">
+          <button type="submit" class="btn-neu-primary w-100">Submit Report</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

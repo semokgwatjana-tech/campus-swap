@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+{% block title %}Privacy Policy{% endblock %}
+{% block content %}
+<div class="container my-4 my-md-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-9">
+      <div class="neu-surface p-4 p-md-5 legal-page">
+        <h1 class="fw-bold mb-1">Privacy Policy</h1>
+        <p class="text-muted-navy mb-4">Last updated: [INSERT DATE]. This policy explains how Campus Swap collects, uses, and protects your personal information under the Protection of Personal Information Act 4 of 2013 (POPIA).</p>
+
+        <h2 class="h5 fw-bold mt-4">1. Who we are</h2>
+        <p>
+          The party responsible for your personal information ("responsible party" under POPIA) is
+          [INSERT REGISTERED COMPANY NAME], registration number
+          [INSERT COMPANY REGISTRATION NUMBER], of [INSERT PHYSICAL BUSINESS ADDRESS]. Our
+          information officer can be reached at [INSERT INFORMATION OFFICER EMAIL].
+        </p>
+
+        <h2 class="h5 fw-bold mt-4">2. Information we collect</h2>
+        <p>We only collect information we need to run the platform and keep it safe:</p>
+        <ul>
+          <li><strong>Account details:</strong> full name, student number, school email address,
+            and a securely hashed password (we never store your password in plain text).</li>
+          <li><strong>Optional profile details:</strong> course, year of study, campus, bio, and
+            profile picture, if you choose to add them.</li>
+          <li><strong>Marketplace activity:</strong> listings you create, messages you send to
+            other students, wishlist items, reviews, and reports you submit.</li>
+          <li><strong>Transaction records:</strong> item price, service fee, payment method,
+            transaction status, and a masked reference to the payment method (for example, the
+            last four digits of a card). We never store full card numbers or CVV codes.</li>
+          <li><strong>Technical information:</strong> standard web server logs (IP address,
+            browser type, pages visited) generated automatically by any website request.</li>
+        </ul>
+        <p>
+          We deliberately do <strong>not</strong> ask for your home address, national ID number,
+          or banking details directly. Payment is handled through the checkout flow described in
+          our <a href="{{ url_for('main.refund_policy') }}">Refund Policy</a>, and safe pickup
+          locations are limited to public campus points rather than private addresses.
+        </p>
+
+        <h2 class="h5 fw-bold mt-4">3. Why we process your information</h2>
+        <table class="table table-sm align-middle">
+          <thead><tr><th>Purpose</th><th>Legal basis under POPIA</th></tr></thead>
+          <tbody>
+            <tr><td>Verifying that you are a genuine student</td><td>Necessary for the contract between us</td></tr>
+            <tr><td>Operating listings, messaging, and transactions</td><td>Necessary for the contract between us</td></tr>
+            <tr><td>Preventing fraud, spam, and fake accounts</td><td>Our legitimate interest in platform safety</td></tr>
+            <tr><td>Responding to reports and disputes</td><td>Necessary for the contract between us</td></tr>
+            <tr><td>Sending you service notifications (offers, messages, order updates)</td><td>Necessary for the contract between us</td></tr>
+          </tbody>
+        </table>
+
+        <h2 class="h5 fw-bold mt-4">4. Who we share information with</h2>
+        <p>We do not sell your personal information. We share it only where necessary:</p>
+        <ul>
+          <li><strong>Other students:</strong> your name, verification badge, profile photo, and
+            listings are visible to other users, because that is how a peer-to-peer marketplace
+            works. Your school email and student number are never shown to other students.</li>
+          <li><strong>Payment processing:</strong> checkout details needed to process a payment are
+            handled by our payment gateway. In this build that gateway is a sandbox simulation and
+            no real payment data leaves the demo environment; when a live payment provider is
+            connected, only the data required to process the transaction will be shared with it.</li>
+          <li><strong>Hosting infrastructure:</strong> our hosting provider stores the application
+            database and files needed to run the site.</li>
+          <li><strong>Legal requirements:</strong> if required by law or a valid legal process.</li>
+        </ul>
+
+        <h2 class="h5 fw-bold mt-4">5. Third-party resources loaded by this site</h2>
+        <p>
+          To render pages, Campus Swap loads the Bootstrap framework and Bootstrap Icons from the
+          jsDelivr content delivery network. Loading any file from a CDN causes your browser to
+          make a direct request to that provider, which will see your IP address and browser
+          information as part of a normal HTTP request, the same way any website resource works.
+          These are open-source code libraries only: they do not set tracking cookies and do not
+          receive any of your Campus Swap account data. We do not currently use Google Fonts,
+          Google Analytics, advertising pixels, or any other analytics or marketing script on this
+          site. If that changes in the future, this section will be updated first, and separate
+          consent will be requested where required.
+        </p>
+
+        <h2 class="h5 fw-bold mt-4">6. Cookies</h2>
+        <p>
+          Campus Swap uses two strictly necessary cookies, both required simply to make the site
+          function:
+        </p>
+        <ul>
+          <li><strong>Session cookie:</strong> keeps you logged in as you move between pages. It is
+            deleted when you log out or when your session expires.</li>
+          <li><strong>CSRF protection cookie:</strong> a security token that prevents malicious
+            websites from submitting forms on your behalf.</li>
+        </ul>
+        <p>
+          Neither cookie is used for advertising, analytics, or tracking you across other websites.
+          Because these cookies are strictly necessary for the site to work, we do not show a
+          cookie-consent banner. If Campus Swap ever adds non-essential cookies (for example,
+          analytics or advertising), this section will be updated and consent will be requested
+          before those cookies are set.
+        </p>
+
+        <h2 class="h5 fw-bold mt-4">7. How long we keep your information</h2>
+        <p>
+          We keep account and transaction information for as long as your account is active, and
+          for a reasonable period afterward to meet legal, tax, and dispute-resolution obligations.
+          You can request deletion of your account as described in Section 8 below.
+        </p>
+
+        <h2 class="h5 fw-bold mt-4">8. Your rights under POPIA</h2>
+        <p>You have the right to:</p>
+        <ul>
+          <li>ask us what personal information we hold about you;</li>
+          <li>ask us to correct information that is inaccurate or out of date;</li>
+          <li>ask us to delete your account and associated personal information, subject to
+            records we are legally required to keep;</li>
+          <li>object to certain processing, such as marketing communications; and</li>
+          <li>lodge a complaint with South Africa's Information Regulator if you believe your
+            information has been misused.</li>
+        </ul>
+        <p>
+          To exercise any of these rights, contact us at [INSERT PRIVACY CONTACT EMAIL].
+        </p>
+
+        <h2 class="h5 fw-bold mt-4">9. Security</h2>
+        <p>
+          Passwords are hashed and never stored in plain text. Forms are protected against
+          cross-site request forgery. Card numbers and CVV codes are never written to our
+          database. Access to administrative tools is restricted to authorised staff. No system is
+          completely secure, and we encourage you to use a unique password for your account.
+        </p>
+
+        <h2 class="h5 fw-bold mt-4">10. Changes to this policy</h2>
+        <p>
+          We may update this Privacy Policy from time to time. Material changes will be
+          communicated to active users before they take effect.
+        </p>
+
+        <div class="neu-card mt-4">
+          <p class="mb-0 small text-muted-navy">
+            This document is a starting template and does not constitute legal advice. Before
+            launching commercially, have it reviewed by a South African attorney or privacy
+            specialist to confirm it fully meets your obligations under POPIA.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

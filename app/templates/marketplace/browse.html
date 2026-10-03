@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% import "partials/_listing_card.html" as cards %}
+{% block title %}Browse Marketplace{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+  <h2 class="fw-bold mb-1">Marketplace</h2>
+  <p class="text-muted-navy mb-4">Textbooks, notes, equipment, and more from students on your campus.</p>
+
+  <form method="GET" class="neu-card mb-4">
+    <div class="row g-2 align-items-end">
+      <div class="col-md-4">
+        <label class="form-label small">Search</label>
+        <input type="text" name="q" value="{{ request.args.get('q','') }}" class="form-control neu-input" placeholder='e.g. "first year Accounting books"'>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label small">Category</label>
+        <select name="category" class="form-select neu-input">
+          {% for value, label in form.category.choices %}
+          <option value="{{ value }}" {% if request.args.get('category','') == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label small">Campus</label>
+        <select name="campus" class="form-select neu-input">
+          {% for value, label in form.campus.choices %}
+          <option value="{{ value }}" {% if request.args.get('campus','') == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label small">Type</label>
+        <select name="listing_type" class="form-select neu-input">
+          {% for value, label in form.listing_type.choices %}
+          <option value="{{ value }}" {% if request.args.get('listing_type','') == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label small">Sort by</label>
+        <select name="sort" class="form-select neu-input">
+          {% for value, label in form.sort.choices %}
+          <option value="{{ value }}" {% if request.args.get('sort','newest') == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    <button type="submit" class="btn-neu-primary mt-3"><i class="bi bi-filter" aria-hidden="true"></i> Apply Filters</button>
+  </form>
+
+  <div class="row g-3">
+    {% for listing in listings %}
+    <div class="col-6 col-md-4 col-lg-3">{{ cards.listing_card(listing, wishlisted=(listing.id in wishlisted_ids)) }}</div>
+    {% else %}
+    <div class="empty-state w-100">
+      <div class="empty-icon"><i class="bi bi-inboxes" aria-hidden="true"></i></div>
+      <h5>No listings match your filters</h5>
+      <p>Try broadening your search or check back soon.</p>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% if pagination and pagination.pages > 1 %}
+  <nav class="mt-4">
+    <ul class="pagination justify-content-center">
+      {% for p in pagination.iter_pages() %}
+        {% if p %}
+        {% set args = request.args.to_dict() %}
+        {% set _ = args.pop('page', None) %}
+        <li class="page-item {% if p == pagination.page %}active{% endif %}">
+          <a class="page-link" href="{{ url_for('marketplace.browse', page=p, **args) }}">{{ p }}</a>
+        </li>
+        {% else %}
+        <li class="page-item disabled"><span class="page-link">…</span></li>
+        {% endif %}
+      {% endfor %}
+    </ul>
+  </nav>
+  {% endif %}
+</div>
+{% endblock %}

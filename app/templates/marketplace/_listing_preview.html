@@ -1,0 +1,5 @@
+<div class="neu-card">
+  <h6 class="fw-bold">{{ form.title.data or "Untitled item" }}</h6>
+  <p class="small text-muted-navy">{{ form.description.data or "" }}</p>
+  <span class="badge-pill-sm">{{ category.name if category else "Uncategorised" }}</span>
+</div>

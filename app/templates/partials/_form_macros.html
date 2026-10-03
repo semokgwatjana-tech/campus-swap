@@ -1,0 +1,42 @@
+{% macro field(f, extra_class="", placeholder="") %}
+<div class="mb-3">
+  {{ f.label(class="form-label") }}
+  {{ f(class="form-control neu-input " ~ extra_class, placeholder=placeholder) }}
+  {% if f.errors %}
+    {% for error in f.errors %}
+      <div class="text-danger small mt-1"><i class="bi bi-exclamation-circle" aria-hidden="true"></i> {{ error }}</div>
+    {% endfor %}
+  {% endif %}
+</div>
+{% endmacro %}
+
+{% macro select_field(f, extra_class="") %}
+<div class="mb-3">
+  {{ f.label(class="form-label") }}
+  {{ f(class="form-select neu-input " ~ extra_class) }}
+  {% if f.errors %}
+    {% for error in f.errors %}
+      <div class="text-danger small mt-1"><i class="bi bi-exclamation-circle" aria-hidden="true"></i> {{ error }}</div>
+    {% endfor %}
+  {% endif %}
+</div>
+{% endmacro %}
+
+{% macro checkbox_field(f) %}
+<div class="form-check mb-3">
+  {{ f(class="form-check-input") }}
+  {{ f.label(class="form-check-label") }}
+</div>
+{% endmacro %}
+
+{% macro file_field(f) %}
+<div class="mb-3">
+  {{ f.label(class="form-label") }}
+  {{ f(class="form-control neu-input") }}
+  {% if f.errors %}
+    {% for error in f.errors %}
+      <div class="text-danger small mt-1"><i class="bi bi-exclamation-circle" aria-hidden="true"></i> {{ error }}</div>
+    {% endfor %}
+  {% endif %}
+</div>
+{% endmacro %}

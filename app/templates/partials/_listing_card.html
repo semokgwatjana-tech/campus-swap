@@ -1,0 +1,39 @@
+{% macro listing_card(listing, wishlisted=False) %}
+<div class="neu-card listing-card h-100 position-relative">
+  <a href="{{ url_for('marketplace.listing_detail', listing_id=listing.id) }}" class="text-decoration-none text-reset">
+    <div class="listing-img-wrap">
+      {% if listing.images %}
+      <img src="{{ url_for('static', filename='uploads/' ~ listing.primary_image) }}"
+           onerror="this.src='{{ url_for('static', filename='uploads/listings/placeholder.png') }}'" alt="{{ listing.title }}">
+      {% else %}
+      <img src="{{ url_for('static', filename='uploads/listings/placeholder.png') }}" alt="{{ listing.title }}">
+      {% endif %}
+    </div>
+    <div class="listing-body">
+      <div class="d-flex justify-content-between align-items-start mb-2">
+        <span class="condition-badge">{{ listing.condition.value }}</span>
+        <span class="listing-type-badge {{ listing.listing_type.value }} condition-badge">
+          {{ "Free" if listing.listing_type.value == "donate" else listing.listing_type.value|capitalize }}
+        </span>
+      </div>
+      <h6 class="fw-bold mb-1 text-truncate">{{ listing.title }}</h6>
+      <div class="d-flex justify-content-between align-items-center">
+        <span class="listing-price">
+          {% if listing.listing_type.value == "sell" %}{{ currency }}{{ "%.0f"|format(listing.price) }}
+          {% elif listing.listing_type.value == "donate" %}Free
+          {% else %}Swap{% endif %}
+        </span>
+        <span class="small text-muted-navy"><i class="bi bi-geo-alt" aria-hidden="true"></i> {{ listing.campus }}</span>
+      </div>
+    </div>
+  </a>
+  {% if current_user.is_authenticated %}
+  <form action="{{ url_for('main.toggle_wishlist', listing_id=listing.id) }}" method="POST" class="position-absolute" style="top:10px; right:10px;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+    <button class="icon-btn" style="width:36px;height:36px;" type="submit" title="Save to wishlist">
+      <i class="bi {{ 'bi-heart-fill text-danger' if wishlisted else 'bi-heart' }}" aria-hidden="true"></i>
+    </button>
+  </form>
+  {% endif %}
+</div>
+{% endmacro %}

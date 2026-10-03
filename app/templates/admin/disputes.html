@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Disputes{% endblock %}
+{% block content %}
+<div class="container my-4">
+  <h3 class="fw-bold mb-4">Transaction Disputes</h3>
+  {% for d in disputes %}
+  <div class="neu-card mb-3">
+    <div class="d-flex justify-content-between">
+      <div>
+        <div class="fw-bold">{{ d.transaction.reference }}: {{ d.transaction.listing.title }}</div>
+        <div class="small text-muted-navy">Raised by {{ d.raised_by.full_name }} · {{ d.reason|replace('_',' ')|title }}</div>
+        {% if d.details %}<p class="small mt-2 mb-0">{{ d.details }}</p>{% endif %}
+      </div>
+      <span class="status-pill status-{{ 'PENDING' if d.status.value == 'open' else 'COMPLETED' }}">{{ d.status.value|title }}</span>
+    </div>
+    {% if d.status.value == "open" %}
+    <form action="{{ url_for('admin.resolve_dispute', dispute_id=d.id) }}" method="POST" class="row g-2 mt-2">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+      <div class="col-md-5">
+        <select name="resolution" class="form-select neu-input">
+          <option value="release">Release funds to seller</option>
+          <option value="refund">Refund buyer</option>
+        </select>
+      </div>
+      <div class="col-md-5"><input name="admin_notes" class="form-control neu-input" placeholder="Admin notes"></div>
+      <div class="col-md-2"><button class="btn-neu-primary w-100" type="submit">Resolve</button></div>
+    </form>
+    {% endif %}
+  </div>
+  {% else %}
+  <div class="empty-state neu-card"><div class="empty-icon"><i class="bi bi-check2-circle" aria-hidden="true"></i></div><p>No disputes to review.</p></div>
+  {% endfor %}
+</div>
+{% endblock %}

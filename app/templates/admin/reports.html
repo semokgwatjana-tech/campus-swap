@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Reports{% endblock %}
+{% block content %}
+<div class="container my-4">
+  <h3 class="fw-bold mb-4">Content Reports</h3>
+  <div class="neu-surface p-0 overflow-hidden">
+    <table class="table mb-0 align-middle">
+      <thead><tr class="text-muted-navy small"><th class="ps-4">Reported By</th><th>Listing</th><th>Reason</th><th>Status</th><th class="pe-4 text-end">Actions</th></tr></thead>
+      <tbody>
+        {% for r in reports %}
+        <tr>
+          <td class="ps-4">{{ r.reporter.full_name }}</td>
+          <td>{{ r.listing.title if r.listing else "N/A" }}</td>
+          <td>{{ r.reason|replace('_',' ')|title }}</td>
+          <td><span class="status-pill status-{{ 'PENDING' if r.status.value == 'open' else 'COMPLETED' }}">{{ r.status.value|title }}</span></td>
+          <td class="pe-4 text-end">
+            {% if r.status.value == "open" %}
+            <form action="{{ url_for('admin.resolve_report', report_id=r.id) }}" method="POST">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+              <button class="btn-neu btn-sm" type="submit">Mark Resolved</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5" class="text-center text-muted-navy py-4">No reports.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

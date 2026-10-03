@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Receipt {{ transaction.reference }}{% endblock %}
+{% block content %}
+<div class="container my-4">
+  <div class="neu-surface p-4 p-md-5 receipt-card">
+    <div class="text-center mb-4">
+      {% if transaction.status.value == "PAID" %}<i class="bi bi-check-circle-fill text-success" style="font-size:3rem;" aria-hidden="true"></i>
+      {% elif transaction.status.value == "PAYMENT_FAILED" %}<i class="bi bi-x-circle-fill text-danger" style="font-size:3rem;" aria-hidden="true"></i>
+      {% elif transaction.status.value == "COMPLETED" %}<i class="bi bi-patch-check-fill text-success" style="font-size:3rem;" aria-hidden="true"></i>
+      {% else %}<i class="bi bi-hourglass-split" style="font-size:3rem; color: var(--cs-navy-soft);" aria-hidden="true"></i>{% endif %}
+      <h4 class="fw-bold mt-2 mb-0">{{ transaction.reference }}</h4>
+      <span class="status-pill status-{{ transaction.status.value }} mt-2 d-inline-flex">{{ transaction.status_label() }}</span>
+    </div>
+
+    <div class="neu-inset p-3 mb-3">
+      <div class="receipt-row"><span>Item</span><span class="fw-semibold">{{ transaction.listing.title }}</span></div>
+      <div class="receipt-row"><span>Buyer</span><span>{{ transaction.buyer.full_name }}</span></div>
+      <div class="receipt-row"><span>Seller</span><span>{{ transaction.seller.full_name }}</span></div>
+      <div class="receipt-row"><span>Item price</span><span>{{ currency }}{{ "%.2f"|format(transaction.item_price) }}</span></div>
+      {% if transaction.service_fee %}<div class="receipt-row"><span>Service fee</span><span>{{ currency }}{{ "%.2f"|format(transaction.service_fee) }}</span></div>{% endif %}
+      <div class="receipt-row fw-bold"><span>Amount paid</span><span>{{ currency }}{{ "%.2f"|format(transaction.total_amount) }}</span></div>
+      <div class="receipt-row"><span>Payment method</span><span>{{ transaction.payment_method.value|replace('_',' ')|title }}</span></div>
+      {% if transaction.gateway_reference %}<div class="receipt-row"><span>Gateway reference</span><span>{{ transaction.gateway_reference }}</span></div>{% endif %}
+      <div class="receipt-row"><span>Pickup location</span><span>{{ transaction.pickup_location or "N/A" }}</span></div>
+      <div class="receipt-row"><span>Date</span><span>{{ transaction.created_at.strftime('%d %b %Y, %H:%M') }}</span></div>
+    </div>
+
+    <div class="d-flex flex-wrap gap-2">
+      {% if current_user.id == transaction.seller_id and transaction.status.value == "PAID" %}
+      <form action="{{ url_for('transactions.mark_ready_for_pickup', transaction_id=transaction.id) }}" method="POST" class="flex-grow-1">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        <button class="btn-neu-primary w-100" type="submit"><i class="bi bi-box-seam" aria-hidden="true"></i> Mark Ready for Pickup</button>
+      </form>
+      {% endif %}
+      {% if transaction.status.value in ["PAID", "READY_FOR_PICKUP"] %}
+      <form action="{{ url_for('transactions.complete_transaction', transaction_id=transaction.id) }}" method="POST" class="flex-grow-1">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        <button class="btn-neu w-100" type="submit"><i class="bi bi-check2-circle" aria-hidden="true"></i> Confirm Handover Complete</button>
+      </form>
+      {% endif %}
+      {% if transaction.status.value == "COMPLETED" %}
+      <a href="{{ url_for('transactions.leave_review', transaction_id=transaction.id) }}" class="btn-neu-primary flex-grow-1 text-center"><i class="bi bi-star" aria-hidden="true"></i> Leave a Review</a>
+      {% endif %}
+      {% if transaction.status.value in ["PAID", "READY_FOR_PICKUP", "COMPLETED"] %}
+      <a href="{{ url_for('transactions.raise_dispute', transaction_id=transaction.id) }}" class="btn-neu flex-grow-1 text-center text-danger"><i class="bi bi-exclamation-triangle" aria-hidden="true"></i> Report a Problem</a>
+      {% endif %}
+      {% if transaction.status.value == "PAYMENT_FAILED" %}
+      <a href="{{ url_for('transactions.checkout', transaction_id=transaction.id) }}" class="btn-neu-primary flex-grow-1 text-center">Try Payment Again</a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
