@@ -1,0 +1,111 @@
+/* Login and sign-up card. One card, two sides: a slanted green panel sweeps
+   across when you switch between Sign in and Create account. Flat colours only. */
+
+.portal-wrap { padding: 2.5rem 1rem 3rem; }
+
+.portal {
+  --pt-green: #0d3b2a; --pt-cream: #f7f2e7; --pt-ink: #1f2a44; --pt-soft: #4a5670;
+  --pt-amber: #b9770e; --pt-line: #b9ad92; --pt-danger: #9f1f18;
+  position: relative; display: grid; grid-template-columns: 1fr 1fr;
+  max-width: 1000px; margin: 0 auto; overflow: hidden; border-radius: 22px;
+  background: var(--pt-cream); color: var(--pt-ink);
+  box-shadow: 0 18px 40px rgba(31, 42, 68, 0.18);
+}
+
+/* Sliding panel */
+.portal-blade {
+  position: absolute; top: 0; bottom: 0; left: 46%; width: 64%; z-index: 1; pointer-events: none;
+  transition: transform 0.75s cubic-bezier(0.7, 0, 0.2, 1);
+}
+.is-signup .portal-blade { transform: translateX(-87.5%); }
+.blade-edge, .blade-fill { position: absolute; top: 0; bottom: 0; }
+.blade-fill { left: 0; right: 0; background: var(--pt-green); clip-path: polygon(0 0, 88% 0, 100% 100%, 12% 100%); }
+.blade-edge { left: -5px; right: -5px; background: var(--pt-amber); clip-path: polygon(0 0, 88% 0, 100% 100%, 12% 100%); }
+
+/* Words on the panel */
+.portal-copy {
+  position: absolute; top: 50%; z-index: 2; width: 31%; color: var(--pt-cream);
+  transform: translateY(-50%); opacity: 0; visibility: hidden;
+  transition: opacity 0.35s ease, visibility 0s linear 0.35s;
+}
+.copy-in { right: 6%; }
+.copy-up { left: 6%; }
+.is-signin .copy-in, .is-signup .copy-up {
+  opacity: 1; visibility: visible; transition: opacity 0.4s ease 0.4s, visibility 0s linear 0.4s;
+}
+.pt-brand { display: inline-flex; align-items: center; gap: 0.5rem; font-weight: 700; font-size: 0.95rem; }
+.pt-badge {
+  width: 30px; height: 30px; border-radius: 9px; background: var(--pt-cream); color: var(--pt-green);
+  display: inline-flex; align-items: center; justify-content: center; font-weight: 900; font-size: 0.8rem;
+}
+.pt-headline {
+  font-family: Georgia, "Times New Roman", serif; font-size: 2.1rem; line-height: 1.12;
+  margin: 1.2rem 0 0.8rem; color: var(--pt-cream);
+}
+.pt-headline em { font-style: italic; color: #f0c27a; }
+.pt-sub { font-size: 0.95rem; line-height: 1.55; margin: 0; color: #e6e0d0; }
+
+/* Form sides */
+.pane { grid-row: 1; padding: 2.4rem 2.6rem; position: relative; z-index: 3; transition: opacity 0.4s ease, visibility 0s; }
+.pane-in { grid-column: 1; padding-right: 14%; align-self: center; }
+.pane-up { grid-column: 2; padding-left: 14%; align-self: center; }
+.pane[inert] { opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 0.25s ease, visibility 0s linear 0.25s; }
+
+.pt-title { font-family: Georgia, "Times New Roman", serif; font-size: 1.7rem; margin: 0 0 1.4rem; color: var(--pt-ink); }
+.pt-title::after { content: ""; display: block; width: 36px; height: 3px; margin-top: 0.5rem; background: var(--pt-amber); }
+
+.pt-field { margin-bottom: 1.05rem; }
+.pt-field label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--pt-soft); margin-bottom: 0.15rem; }
+.pt-input { position: relative; display: flex; align-items: center; border-bottom: 2px solid var(--pt-line); }
+.pt-input:focus-within { border-bottom-color: var(--pt-amber); }
+.pt-input input:not([type="file"]):not([type="checkbox"]), .pt-input select {
+  flex: 1; min-width: 0; width: 100%; border: 0; background: transparent; color: var(--pt-ink);
+  padding: 0.5rem 0; font-size: 1rem; font-family: inherit; border-radius: 0;
+}
+.pt-input input::placeholder { color: #596277; }
+.pt-input input[type="file"] { width: 100%; padding: 0.4rem 0; font-size: 0.85rem; color: var(--pt-ink); }
+.pt-input i { color: var(--pt-soft); font-size: 1.05rem; margin-left: 0.5rem; }
+.pt-eye { border: 0; background: transparent; padding: 0.25rem; margin-left: 0.25rem; color: var(--pt-soft); cursor: pointer; border-radius: 6px; }
+.pt-eye i { margin: 0; }
+.pt-hint { display: block; font-size: 0.75rem; color: var(--pt-soft); margin-top: 0.2rem; }
+.pt-error { font-size: 0.8rem; color: var(--pt-danger); margin: 0.25rem 0 0; }
+.pt-two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 1rem; }
+
+.pt-row { display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; flex-wrap: wrap; margin: 0.2rem 0 1.2rem; }
+.pt-check { display: inline-flex; align-items: flex-start; gap: 0.5rem; font-size: 0.85rem; font-weight: 400 !important; color: var(--pt-ink) !important; cursor: pointer; }
+.pt-check input { margin-top: 0.2rem; accent-color: var(--pt-green); width: 1rem; height: 1rem; flex: 0 0 auto; }
+.pt-consent { font-size: 0.78rem; line-height: 1.45; }
+
+.pt-link { color: var(--pt-ink); font-weight: 600; text-decoration: underline; text-decoration-color: var(--pt-amber); text-underline-offset: 3px; font-size: inherit; }
+.pt-link:hover { color: var(--pt-green); }
+.pt-button {
+  width: 100%; border: 0; border-radius: 12px; padding: 0.85rem 1rem; font-size: 1rem; font-weight: 600;
+  background: var(--pt-green); color: var(--pt-cream); cursor: pointer; transition: background 0.2s ease;
+}
+.pt-button:hover { background: #14573e; }
+.pt-switch { margin: 1.1rem 0 0; font-size: 0.85rem; color: var(--pt-soft); }
+
+.portal a:focus-visible, .portal button:focus-visible, .portal input:focus-visible, .portal select:focus-visible {
+  outline: 3px solid var(--pt-green); outline-offset: 3px; border-radius: 4px;
+}
+
+.pt-guardian { margin: 0 0 1.05rem; padding: 0.75rem 0.9rem; border-left: 3px solid var(--pt-amber); background: rgba(185, 119, 14, 0.08); }
+.pt-guardian[hidden] { display: none; }
+.pt-guardian-note { margin: 0 0 0.6rem; font-size: 0.82rem; color: var(--pt-ink); }
+
+/* Phones and small tablets: no sweep. A green header shows the side you are on. */
+@media (max-width: 767.98px) {
+  .portal-wrap { padding: 1rem 0.75rem 2rem; }
+  .portal { display: block; }
+  .portal-blade { display: none; }
+  .portal-copy { position: static; transform: none; width: auto; padding: 1.6rem 1.5rem; background: var(--pt-green); visibility: visible; opacity: 1; transition: none; }
+  .is-signin .copy-up, .is-signup .copy-in { display: none; }
+  .pt-headline { font-size: 1.7rem; margin: 0.9rem 0 0.5rem; }
+  .pane { padding: 1.6rem 1.5rem 1.8rem !important; }
+  .pane[inert] { display: none; }
+  .pt-two { grid-template-columns: 1fr; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .portal-blade, .portal-copy, .pane, .pt-button { transition: none !important; }
+}

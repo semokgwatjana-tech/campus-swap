@@ -1,0 +1,27 @@
+{% extends "settings/_layout.html" %}
+{% block title %}Privacy{% endblock %}
+{% block page_title %}Privacy{% endblock %}
+{% block body %}
+<form method="POST" class="neu-surface p-4 mb-4">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <fieldset class="mb-4">
+    <legend class="h5 fw-bold">Profile</legend>
+    <p class="small text-muted-navy">Choose who can open your profile page.{% if is_minor %} Because you are under 18, your profile is always private and this cannot be changed.{% endif %}</p>
+    <div class="form-check mb-2">
+      <input class="form-check-input" type="radio" name="profile_visibility" id="vis_public" value="public" {{ "checked" if s.profile_visibility == "public" }} {{ "disabled" if is_minor }}>
+      <label class="form-check-label" for="vis_public"><strong>Public</strong>. Any student can see your profile, About, rating and badges.</label>
+    </div>
+    <div class="form-check">
+      <input class="form-check-input" type="radio" name="profile_visibility" id="vis_private" value="private" {{ "checked" if s.profile_visibility == "private" }} {{ "disabled" if is_minor }}>
+      <label class="form-check-label" for="vis_private"><strong>Private</strong>. Only you can see your profile page. Your listings stay visible in the marketplace so people can still buy from you.</label>
+    </div>
+  </fieldset>
+  <div class="mb-4">
+    <label for="about" class="form-label h5 fw-bold">About</label>
+    <textarea id="about" name="about" rows="4" maxlength="500" class="form-control neu-input" aria-describedby="about_help">{{ current_user.profile.bio or "" }}</textarea>
+    <div id="about_help" class="form-text">Optional. Up to 500 characters. Shown on your profile when it is public.</div>
+  </div>
+  <button class="btn-neu-primary" type="submit">Save</button>
+</form>
+<div class="neu-surface p-4"><h2 class="h6 fw-bold">Live location</h2><p class="small text-muted-navy mb-0">Sharing your live location with the student you are meeting is coming soon.</p></div>
+{% endblock %}

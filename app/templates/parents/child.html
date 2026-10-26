@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}{{ learner.full_name }}{% endblock %}
+{% block content %}
+<div class="container my-4" style="max-width:52rem">
+  <a href="{{ url_for('parents.home') }}" class="small">&larr; Parent portal</a>
+  <h1 class="h3 fw-bold mt-2 mb-1">{{ learner.full_name }}</h1>
+  <p class="text-muted-navy">{{ learner.profile.campus if learner.profile else '' }}. {{ "Account is paused." if learner.parent_paused else "Account is active." }}</p>
+
+  <div class="neu-surface p-4 mb-4">
+    <h2 class="h5 fw-bold">Controls</h2>
+    <div class="d-flex flex-wrap gap-2 mb-2">
+      <form method="POST" action="{{ url_for('parents.pause', learner_id=learner.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="btn-neu" type="submit">{{ "Resume account" if learner.parent_paused else "Pause account" }}</button></form>
+      <form method="POST" action="{{ url_for('parents.paid_trades', learner_id=learner.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="btn-neu" type="submit">{{ "Switch buying and selling off" if learner.allow_paid_trades else "Allow buying and selling" }}</button></form>
+    </div>
+    <p class="small text-muted-navy mb-0">Buying and selling is currently <strong>{{ "allowed" if learner.allow_paid_trades else "off" }}</strong>. Swapping and donating are always available while the account is active.</p>
+  </div>
+
+  <div class="neu-surface p-4 mb-4">
+    <h2 class="h5 fw-bold">Chats</h2>
+    <p class="small text-muted-navy">Your child knows you can read their chats.</p>
+    {% for c in conversations %}
+    <a class="d-block mb-1" href="{{ url_for('parents.chat', learner_id=learner.id, conversation_id=c.id) }}">Chat about {{ c.listing.title if c.listing else 'a listing' }}</a>
+    {% else %}<p class="mb-0">No chats yet.</p>{% endfor %}
+  </div>
+
+  <div class="neu-surface p-4 mb-4">
+    <h2 class="h5 fw-bold">Listings</h2>
+    {% for l in listings %}<div class="small">{{ l.title }} ({{ l.listing_type.value }}, {{ l.status.value }})</div>{% else %}<p class="mb-0">None yet.</p>{% endfor %}
+  </div>
+
+  <div class="neu-surface p-4 mb-4">
+    <h2 class="h5 fw-bold">Purchases, sales and swaps</h2>
+    {% for t in transactions %}<div class="small">{{ t.reference }}: {{ t.listing.title if t.listing else '' }}, {{ currency }}{{ "%.2f"|format(t.total_amount) }}, {{ t.status.value }}{% if t.pickup_location %}, pickup at {{ t.pickup_location }}{% endif %}</div>{% else %}<p class="mb-0">None yet.</p>{% endfor %}
+  </div>
+
+  <div class="neu-surface p-4 mb-4">
+    <h2 class="h5 fw-bold">Recent sign-in activity</h2>
+    {% for e in events %}<div class="small">{{ e.created_at.strftime('%d %b %Y %H:%M') }}: {{ labels.get(e.kind, e.kind) }}{% if e.user_agent %} ({{ browser_summary(e.user_agent) }}){% endif %}</div>{% else %}<p class="mb-0">Nothing yet.</p>{% endfor %}
+  </div>
+
+  <div class="neu-surface p-4">
+    <h2 class="h5 fw-bold">Close the account</h2>
+    <p class="small text-muted-navy">This permanently closes {{ learner.full_name }}'s account. It cannot be done while a purchase, sale or dispute is open.</p>
+    <form method="POST" action="{{ url_for('parents.close', learner_id=learner.id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label for="confirm_text" class="form-label">Type CLOSE to confirm</label>
+      <input id="confirm_text" name="confirm_text" class="form-control neu-input mb-2" style="max-width:14rem" autocomplete="off" required>
+      <button class="btn-neu-danger" type="submit">Close account</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

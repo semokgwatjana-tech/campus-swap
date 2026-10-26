@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Feedback{% endblock %}
+{% block content %}
+<div class="container my-4">
+  <h1 class="h3 fw-bold mb-3">Feedback and reports</h1>
+  {% for f in items %}
+  <div class="neu-card p-3 mb-3">
+    <div class="d-flex justify-content-between flex-wrap gap-2">
+      <strong>{{ f.subject }}</strong>
+      <span class="small text-muted-navy">{{ f.kind }}, {{ f.created_at.strftime("%d %b %Y %H:%M") }}, v{{ f.app_version or "?" }}</span>
+    </div>
+    <div class="small text-muted-navy mb-2">From user #{{ f.user_id or "none" }}</div>
+    <p class="mb-0" style="white-space:pre-wrap">{{ f.message }}</p>
+  </div>
+  {% else %}
+  <p class="text-muted-navy">No feedback yet.</p>
+  {% endfor %}
+</div>
+{% endblock %}

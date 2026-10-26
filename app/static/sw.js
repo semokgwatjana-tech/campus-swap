@@ -8,7 +8,7 @@
  * pages, and never anything from a POST/PUT/DELETE request.
  */
 
-const CACHE_NAME = "campus-swap-shell-v1";
+const CACHE_NAME = "campus-swap-shell-v2";
 
 const APP_SHELL = [
   "/static/css/style.css",

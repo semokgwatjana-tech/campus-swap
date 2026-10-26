@@ -1,0 +1,19 @@
+{% extends "settings/_layout.html" %}
+{% block title %}Accessibility{% endblock %}
+{% block page_title %}Accessibility{% endblock %}
+{% block body %}
+<form method="POST" class="neu-surface p-4">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="form-check mb-1">
+    <input class="form-check-input" type="checkbox" id="increase_contrast" name="increase_contrast" value="1" {{ "checked" if s.increase_contrast }}>
+    <label class="form-check-label fw-bold" for="increase_contrast">Increase contrast</label>
+  </div>
+  <p class="small text-muted-navy ms-4 mb-4">Darkens the key colours and adds clearer edges to make things easier to see. Applies in Light mode.</p>
+  <div class="form-check mb-1">
+    <input class="form-check-input" type="checkbox" id="animations_enabled" name="animations_enabled" value="1" {{ "checked" if s.animations_enabled }}>
+    <label class="form-check-label fw-bold" for="animations_enabled">Animation</label>
+  </div>
+  <p class="small text-muted-navy ms-4 mb-4">Turn off to remove movement and transitions across the app.</p>
+  <button class="btn-neu-primary" type="submit">Save</button>
+</form>
+{% endblock %}

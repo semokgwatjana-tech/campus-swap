@@ -1,0 +1,27 @@
+{% extends "settings/_layout.html" %}
+{% block title %}Delete account{% endblock %}
+{% block page_title %}Delete account{% endblock %}
+{% block body %}
+<div class="neu-surface p-4">
+  <p>Deleting your account is permanent. It will:</p>
+  <ul>
+    <li>remove your name, email, phone number, username, profile details and picture from your account;</li>
+    <li>take down your active listings and clear your wishlist;</li>
+    <li>keep records of past sales, purchases, chats and reviews that other students and the law rely on, shown under the name "Deleted user".</li>
+  </ul>
+  <p class="small text-muted-navy">Want a copy of your chats first? <a href="{{ url_for('settings.chats') }}">Download a backup</a>.</p>
+
+  {% if is_admin %}
+    <p class="text-danger">Administrator accounts cannot be deleted here. Ask another administrator to remove your admin role first.</p>
+  {% elif open_tx or open_disputes %}
+    <p class="text-danger">You cannot delete your account yet. You have {{ open_tx }} open transaction{{ "" if open_tx == 1 else "s" }} and {{ open_disputes }} open dispute{{ "" if open_disputes == 1 else "s" }}. Finish or resolve them first.</p>
+  {% else %}
+  <form method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="mb-3"><label for="pw" class="form-label">Current password</label><input id="pw" name="current_password" type="password" class="form-control neu-input" autocomplete="current-password" required></div>
+    <div class="mb-3"><label for="confirm_text" class="form-label">Type DELETE to confirm</label><input id="confirm_text" name="confirm_text" class="form-control neu-input" autocomplete="off" required></div>
+    <button class="btn-neu-danger" type="submit">Delete my account permanently</button>
+  </form>
+  {% endif %}
+</div>
+{% endblock %}

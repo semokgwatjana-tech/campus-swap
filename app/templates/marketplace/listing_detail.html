@@ -9,7 +9,7 @@
       <div class="gallery-main mb-3">
         {% if listing.images %}
         <img src="{{ url_for('static', filename='uploads/' ~ listing.primary_image) }}"
-             onerror="this.src='{{ url_for('static', filename='uploads/listings/placeholder.png') }}'" alt="{{ listing.title }}">
+             data-fallback="{{ url_for('static', filename='uploads/listings/placeholder.png') }}" alt="{{ listing.title }}">
         {% else %}
         <img src="{{ url_for('static', filename='uploads/listings/placeholder.png') }}" alt="{{ listing.title }}">
         {% endif %}
@@ -97,7 +97,7 @@
               </form>
             </div>
             <div class="col-6">
-              <button class="btn-neu w-100" type="button" onclick="navigator.share ? navigator.share({title: '{{ listing.title }}', url: window.location.href}) : alert('Copy this link to share: ' + window.location.href)">
+              <button class="btn-neu w-100" type="button" data-share-title="{{ listing.title }}">
                 <i class="bi bi-share" aria-hidden="true"></i> Share
               </button>
             </div>
@@ -111,7 +111,7 @@
         {% else %}
           <div class="d-flex gap-2">
             <a href="{{ url_for('marketplace.edit_listing', listing_id=listing.id) }}" class="btn-neu flex-grow-1 text-center"><i class="bi bi-pencil" aria-hidden="true"></i> Edit</a>
-            <form action="{{ url_for('marketplace.delete_listing', listing_id=listing.id) }}" method="POST" onsubmit="return confirm('Remove this listing?')" class="flex-grow-1">
+            <form action="{{ url_for('marketplace.delete_listing', listing_id=listing.id) }}" method="POST" data-confirm="Remove this listing?" class="flex-grow-1">
               <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
               <button class="btn-neu-danger w-100" type="submit"><i class="bi bi-trash" aria-hidden="true"></i> Remove</button>
             </form>
@@ -124,7 +124,7 @@
         <div class="neu-card d-flex align-items-center gap-3">
           <img src="{{ url_for('static', filename='uploads/profiles/' ~ listing.seller.profile.profile_picture) if listing.seller.profile.profile_picture != 'default_avatar.png' else url_for('static', filename='img/default_avatar.svg') }}"
                class="avatar-circle avatar-circle-lg" alt="{{ listing.seller.full_name }}"
-               onerror="this.src='{{ url_for('static', filename='img/default_avatar.svg') }}'">
+               data-fallback="{{ url_for('static', filename='img/default_avatar.svg') }}">
           <div>
             <div class="fw-bold d-flex align-items-center gap-2">
               {{ listing.seller.full_name }}

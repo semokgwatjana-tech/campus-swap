@@ -1,0 +1,11 @@
+{% extends "settings/_layout.html" %}
+{% block title %}Sign-in activity{% endblock %}
+{% block page_title %}Sign-in activity{% endblock %}
+{% block body %}
+<div class="neu-surface p-4">
+  <p class="small text-muted-navy">The last 30 things that happened on your account, kept for 90 days. If something here was not you, change your password straight away.</p>
+  {% for e in events %}
+  <div class="receipt-row"><span>{{ labels.get(e.kind, e.kind) }}{% if e.detail %} ({{ e.detail }}){% endif %}</span><span class="small">{{ e.created_at.strftime('%d %b %Y, %H:%M') }}{% if e.user_agent %}, {{ browser_summary(e.user_agent) }}{% endif %}</span></div>
+  {% else %}<p class="mb-0">Nothing yet.</p>{% endfor %}
+</div>
+{% endblock %}

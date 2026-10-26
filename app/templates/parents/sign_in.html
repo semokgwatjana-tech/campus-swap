@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Parent portal{% endblock %}
+{% block content %}
+<div class="container my-5">
+  <div class="neu-surface p-4 p-md-5 mx-auto" style="max-width:34rem">
+    <h1 class="h3 fw-bold mb-2">Parent portal</h1>
+    <p class="text-muted-navy">For parents and guardians of learners on Campus Swap. Enter the email address your child gave us and we will send a sign-in link. There is no password.</p>
+    <form method="POST" novalidate>
+      {{ form.hidden_tag() }}
+      <label for="{{ form.email.id }}" class="form-label">Your email</label>
+      <input type="email" id="{{ form.email.id }}" name="{{ form.email.name }}" class="form-control neu-input mb-3" autocomplete="email" required>
+      <button class="btn-neu-primary" type="submit">Email me a sign-in link</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

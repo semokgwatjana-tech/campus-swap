@@ -1,0 +1,19 @@
+{% extends "settings/_layout.html" %}
+{% block title %}Appearance{% endblock %}
+{% block page_title %}Appearance{% endblock %}
+{% block body %}
+<form method="POST" class="neu-surface p-4">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <fieldset>
+    <legend class="h5 fw-bold">Mode</legend>
+    <p class="small text-muted-navy">The Campus Swap logo at the top changes with the mode.</p>
+    {% for key, name, desc in [("light","Light","The default green and white look."),("dark","Dark","Easy on the eyes at night."),("blue","Blue","A calm light blue."),("velvet","Velvet","Deep wine and rose.")] %}
+    <div class="form-check mb-2">
+      <input class="form-check-input" type="radio" name="theme" id="theme_{{ key }}" value="{{ key }}" {{ "checked" if s.theme == key }}>
+      <label class="form-check-label" for="theme_{{ key }}"><strong>{{ name }}</strong>. {{ desc }}</label>
+    </div>
+    {% endfor %}
+  </fieldset>
+  <button class="btn-neu-primary mt-3" type="submit">Apply</button>
+</form>
+{% endblock %}

@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Check your email{% endblock %}
+{% block content %}
+<div class="container my-5">
+  <div class="neu-surface p-4 p-md-5 mx-auto" style="max-width:34rem">
+    <h1 class="h3 fw-bold mb-2">Check your email</h1>
+    {% if masked %}<p>We sent a link to <strong>{{ masked }}</strong>. Open it to confirm your address, then sign in. If that address looks wrong, create the account again with the right one.</p>
+    {% else %}<p>Enter your email address and we will send the confirmation link again.</p>{% endif %}
+    <p class="small text-muted-navy">It can take a few minutes. Look in your spam or junk folder too.</p>
+    <form method="POST" novalidate>
+      {{ form.hidden_tag() }}
+      <label for="{{ form.school_email.id }}" class="form-label">Email address</label>
+      <input type="email" id="{{ form.school_email.id }}" name="{{ form.school_email.name }}" class="form-control neu-input mb-2" autocomplete="email" required>
+      <button class="btn-neu" type="submit">Send the link again</button>
+    </form>
+    <p class="small mt-3 mb-0"><a href="{{ url_for('auth.login') }}">Back to sign in</a></p>
+  </div>
+</div>
+{% endblock %}

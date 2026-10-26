@@ -6,7 +6,7 @@
     <div class="col-lg-9">
       <div class="neu-surface p-4 p-md-5 legal-page">
         <h1 class="fw-bold mb-1">Terms &amp; Conditions</h1>
-        <p class="text-muted-navy mb-4">Last updated: [INSERT DATE]. Effective for all accounts created on or after this date.</p>
+        <p class="text-muted-navy mb-4">Last updated: {{ business.last_updated }}. Effective for all accounts created on or after this date.</p>
 
         <div class="neu-card mb-4">
           <p class="mb-0 small">
@@ -20,10 +20,10 @@
 
         <h2 id="who-we-are" class="h5 fw-bold mt-4">1. Who operates Campus Swap</h2>
         <p>
-          Campus Swap is operated by [INSERT REGISTERED COMPANY NAME], a company registered in
-          South Africa under registration number [INSERT COMPANY REGISTRATION NUMBER], with its
-          registered address at [INSERT PHYSICAL BUSINESS ADDRESS]. You can contact us at
-          [INSERT SUPPORT EMAIL] for any question about these Terms.
+          Campus Swap is operated by {{ business.name }}, a company registered in
+          South Africa under registration number {{ business.reg_number }}, with its
+          registered address at {{ business.address }}. You can contact us at
+          {{ business.support_email }} for any question about these Terms.
         </p>
 
         <h2 class="h5 fw-bold mt-4">2. Eligibility and account registration</h2>
@@ -107,7 +107,7 @@
         <p>
           We may suspend or terminate an account that violates these Terms, provides false
           verification information, or is used for fraudulent or unsafe conduct. You may close
-          your account at any time by contacting us at [INSERT SUPPORT EMAIL].
+          your account at any time by contacting us at {{ business.support_email }}.
         </p>
 
         <h2 class="h5 fw-bold mt-4">9. Limitation of liability</h2>

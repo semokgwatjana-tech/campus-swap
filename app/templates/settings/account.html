@@ -1,0 +1,84 @@
+{% extends "settings/_layout.html" %}
+{% block title %}Account{% endblock %}
+{% block page_title %}Account{% endblock %}
+{% block body %}
+<div class="neu-surface p-4 mb-4">
+  <h2 class="h5 fw-bold mb-3">Your account</h2>
+  <form method="POST" action="{{ url_for('settings.change_username') }}" class="mb-4">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label for="username" class="form-label">Username</label>
+    <div class="input-group">
+      <span class="input-group-text">@</span>
+      <input id="username" name="username" class="form-control neu-input" value="{{ current_user.username or '' }}" maxlength="30" autocomplete="off" required>
+      <button class="btn-neu" type="submit">Save</button>
+    </div>
+    <div class="form-text">3 to 30 letters, numbers, dots or underscores.</div>
+  </form>
+  {% if not current_user.is_minor %}
+  <form method="POST" action="{{ url_for('settings.change_phone') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label for="phone_number" class="form-label">Phone number</label>
+    <div class="input-group">
+      <input id="phone_number" name="phone_number" type="tel" class="form-control neu-input" value="{{ current_user.phone_number or '' }}" autocomplete="tel">
+      <button class="btn-neu" type="submit">Save</button>
+    </div>
+    <div class="form-text">Not verified by SMS and never shown to other students. Leave empty to remove it.</div>
+  </form>
+  {% else %}
+  <p class="small text-muted-navy mb-0">Phone numbers are not available on accounts under 18.</p>
+  {% endif %}
+</div>
+
+<div class="neu-surface p-4 mb-4">
+  <h2 class="h5 fw-bold mb-3">Login security</h2>
+
+  <h3 class="h6 fw-bold">Email address</h3>
+  <p class="small text-muted-navy mb-2">Current: {{ current_user.school_email }}{% if current_user.pending_email %}. Waiting for confirmation: {{ current_user.pending_email }}{% endif %}</p>
+  {% if not mail_ready %}<p class="small text-warning">Email sending is not set up on this server, so the email address cannot be changed yet.</p>{% endif %}
+  <form method="POST" action="{{ url_for('settings.change_email') }}" class="mb-4">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="row g-2">
+      <div class="col-md-6"><label for="new_email" class="form-label">New email</label><input id="new_email" name="new_email" type="email" class="form-control neu-input" required></div>
+      <div class="col-md-6"><label for="email_pw" class="form-label">Current password</label><input id="email_pw" name="current_password" type="password" class="form-control neu-input" autocomplete="current-password" required></div>
+    </div>
+    <button class="btn-neu mt-2" type="submit">Send confirmation link</button>
+  </form>
+
+  <h3 class="h6 fw-bold">Password</h3>
+  <form method="POST" action="{{ url_for('settings.change_password') }}" class="mb-4">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="row g-2">
+      <div class="col-md-4"><label for="pw_current" class="form-label">Current password</label><input id="pw_current" name="current_password" type="password" class="form-control neu-input" autocomplete="current-password" required></div>
+      <div class="col-md-4"><label for="pw_new" class="form-label">New password</label><input id="pw_new" name="new_password" type="password" class="form-control neu-input" minlength="10" maxlength="128" autocomplete="new-password" required></div>
+      <div class="col-md-4"><label for="pw_confirm" class="form-label">Confirm new password</label><input id="pw_confirm" name="confirm_password" type="password" class="form-control neu-input" minlength="10" maxlength="128" autocomplete="new-password" required></div>
+    </div>
+    <button class="btn-neu mt-2" type="submit">Change password</button>
+  </form>
+
+  <h3 class="h6 fw-bold">Two-step verification</h3>
+  <p class="small text-muted-navy mb-2">{{ "On. You will enter a code from your authenticator app when you log in." if current_user.two_factor_enabled else "Off. Add a code from an authenticator app as a second step when you log in." }}</p>
+  <a class="btn-neu mb-4 d-inline-block" href="{{ url_for('settings.two_step') }}">{{ "Manage two-step verification" if current_user.two_factor_enabled else "Set up two-step verification" }}</a>
+
+  <h3 class="h6 fw-bold">Security notifications</h3>
+  <form method="POST" action="{{ url_for('settings.security_alerts') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="form-check mb-2">
+      <input class="form-check-input" type="checkbox" id="security_alerts" name="security_alerts" value="1" {{ "checked" if s.security_alerts }}>
+      <label class="form-check-label" for="security_alerts">Email me when my password, email, phone number or two-step verification changes</label>
+    </div>
+    <button class="btn-neu" type="submit">Save</button>
+  </form>
+</div>
+
+<div class="neu-surface p-4 mb-4">
+  <h2 class="h5 fw-bold mb-3">Devices and activity</h2>
+  <p class="small text-muted-navy">Signed in somewhere you no longer use? Sign out everywhere except this device. A password change does this automatically.</p>
+  <form method="POST" action="{{ url_for('settings.logout_everywhere') }}" class="mb-3"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn-neu" type="submit">Sign out of all other devices</button></form>
+  <a href="{{ url_for('settings.activity') }}">See recent sign-in activity</a>
+</div>
+
+<div class="neu-surface p-4 mb-4">
+  <h2 class="h5 fw-bold mb-3">Account centre</h2>
+  <form method="POST" action="{{ url_for('auth.logout') }}" class="d-inline"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button type="submit" class="btn-neu-danger"><i class="bi bi-box-arrow-right" aria-hidden="true"></i> Log out</button></form>
+</div>
+{% endblock %}

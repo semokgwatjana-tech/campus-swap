@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Your date of birth{% endblock %}
+{% block content %}
+<div class="container my-5">
+  <div class="neu-surface p-4 p-md-5 mx-auto" style="max-width:34rem">
+    <h1 class="h3 fw-bold mb-2">One quick question</h1>
+    <p class="text-muted-navy">Campus Swap keeps students under 18 and adults on separate sides, so we need your date of birth. You enter it once and it cannot be changed afterwards, so please enter it carefully.</p>
+    <form method="POST" novalidate>
+      {{ form.hidden_tag() }}
+      <div class="mb-3">
+        <label for="{{ form.date_of_birth.id }}" class="form-label">Date of birth</label>
+        <input type="date" id="{{ form.date_of_birth.id }}" name="{{ form.date_of_birth.name }}" value="{{ form.date_of_birth.data.isoformat() if form.date_of_birth.data else '' }}" class="form-control neu-input" required>
+        {% for e in form.date_of_birth.errors %}<div class="text-danger small mt-1" role="alert">{{ e }}</div>{% endfor %}
+      </div>
+      <fieldset class="mb-3">
+        <legend class="h6 fw-bold">If you are under 18</legend>
+        <p class="small text-muted-navy">A parent or legal guardian must agree before you can use Campus Swap. We will email them.</p>
+        <label for="{{ form.guardian_name.id }}" class="form-label">Parent or guardian name</label>
+        <input id="{{ form.guardian_name.id }}" name="{{ form.guardian_name.name }}" value="{{ form.guardian_name.data or '' }}" class="form-control neu-input mb-2" autocomplete="off">
+        <label for="{{ form.guardian_email.id }}" class="form-label">Parent or guardian email</label>
+        <input type="email" id="{{ form.guardian_email.id }}" name="{{ form.guardian_email.name }}" value="{{ form.guardian_email.data or '' }}" class="form-control neu-input" autocomplete="off">
+        {% for e in form.guardian_email.errors %}<div class="text-danger small mt-1" role="alert">{{ e }}</div>{% endfor %}
+      </fieldset>
+      <button class="btn-neu-primary" type="submit">Save</button>
+      {% include "parents/_logout_form.html" %}
+    </form>
+  </div>
+</div>
+{% endblock %}

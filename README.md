@@ -8,6 +8,9 @@ green/white/navy palette).
 ## Quick Start
 
 ```bash
+# 0. Local work only: say so, otherwise the app starts as the LIVE site and wants a real SECRET_KEY
+#    Windows PowerShell:  $env:FLASK_ENV="development"      Mac/Linux:  export FLASK_ENV=development
+
 # 1. Create a virtual environment
 python3 -m venv venv
 source venv/bin/activate        # Windows: venv\Scripts\activate
@@ -18,7 +21,6 @@ pip install -r requirements.txt
 # 3. Set up the database
 export FLASK_APP=run.py         # Windows: set FLASK_APP=run.py
 flask init-db
-flask seed-db                   # optional: demo categories, users & listings
 flask create-admin --email admin@campusswap.app --password ChangeMe123
 
 # 4. Run it
@@ -26,8 +28,10 @@ python run.py
 # → http://localhost:5000
 ```
 
-Demo accounts created by `flask seed-db` all use the password `password123`
-(e.g. `sarah.mokoena@campusswap.app`).
+`flask init-db` also adds the listing categories and badges the app needs. It creates
+no users and no listings. If your database still holds the sample students that
+earlier versions created, back it up and then remove them with
+`flask --app run.py clear-demo-data`.
 
 ## What's included
 
@@ -47,7 +51,7 @@ Demo accounts created by `flask seed-db` all use the password `password123`
 | Reviews & trust score | ✅ |
 | Student profiles + badges (gamification) | ✅ |
 | Admin panel (users, listings, reports, disputes, settings, analytics) | ✅ |
-| AI feature placeholders (price suggestion, listing generator, smart search) | ✅ stubbed, provider-agnostic |
+| Price guide on the sell page (real Campus Swap prices only, shown once at least 3 similar items exist) | ✅ |
 | Reports / content moderation | ✅ |
 
 ## Design & compliance pass (this revision)
@@ -115,6 +119,14 @@ follows is the honest accounting, not a marketing summary.
 4. Connect a real payment provider in `app/transactions/payment_gateway.py`
    and update the Refund Policy's payment-timing section to match its real
    settlement behaviour.
+
+## Going live
+
+Business details, password-reset email, campus email domains and the payment
+provider are all set through environment settings, with no code edits. See
+`docs/GO_LIVE.md` for the exact lines, the demo-data cleanup command
+(`flask clear-demo-data`) and the admin password command
+(`flask reset-password --email ...`).
 
 ## Mobile app
 
@@ -184,10 +196,10 @@ campus_swap/
     ├── models.py           # full relational schema (users, listings, transactions, etc.)
     ├── forms.py            # Flask-WTF forms (CSRF-protected)
     ├── utils.py            # shared helpers (uploads, fees, notifications)
-    ├── seed.py / cli.py    # demo data + `flask` CLI commands
+    ├── seed.py / cli.py    # categories and badges + `flask` CLI commands
     ├── auth/               # register, login, password reset
     ├── main/               # landing, dashboard, profile, wishlist, notifications, impact
-    ├── marketplace/        # browse, listing detail, sell/edit, AI placeholders
+    ├── marketplace/        # browse, listing detail, sell/edit, price guide
     ├── transactions/       # checkout, payments, donations, swaps, reviews, disputes
     ├── messaging/          # conversations
     ├── admin/              # moderation, verification, settings, analytics
@@ -206,13 +218,118 @@ campus_swap/
   extensions.
 - Role-based access (`admin_required` decorator) protects `/admin/*`.
 
-## What's a placeholder (by design, per spec)
+## What is still simulated
 
-- **AI features** (`app/marketplace/ai_features.py`) use lightweight
-  heuristics today so every button is fully wired up end-to-end. Swap in a
-  real AI/vision API by editing just that file.
-- **Email** is not wired to a real SMTP/verification provider; password
-  reset links are shown directly in a flash message for demo purposes
-  (clearly labeled "Demo mode").
-- **Payment provider** is the sandbox gateway described above — safe by
-  design until real credentials are added.
+Only the payment gateway. Checkout uses the sandbox gateway, so no real money moves
+and the "Demo payments" banner stays until a real provider is connected (see
+`docs/GO_LIVE.md`). Everything else is real: accounts, listings, chats, offers,
+receipts and emails (email needs the SMTP settings in `docs/GO_LIVE.md`).
+
+## Settings area (version 1.1.0)
+
+Settings are at `/settings` (account menu, then Settings). Each setting is stored
+in the database and takes effect in the app.
+
+| Section | What it does |
+|---|---|
+| Account | Username, phone number, email change (confirmed by a link sent to the new address), password change, two-step verification (authenticator app and recovery codes), security notifications, log out. |
+| Privacy | Profile public or private, and an optional About text. |
+| Lists | Which of your lists (for sale, swap, donations) comes first on My Listings and your profile. |
+| Chats | Download a backup of your chats as text or JSON. |
+| Appearance | Light, Dark, Blue and Velvet. The logo badge changes with the mode. |
+| Storage and data | What you have uploaded, and clearing saved data on this device. Photos are never resized or altered. |
+| Accessibility | Increase contrast (Light mode) and turn animation off. |
+| Help and feedback | Help centre, contact us, send feedback, report a technical issue (stored, emailed, and listed for admins at `/admin/feedback`), legal pages, app info. |
+| Invite a friend | A personal invite link, with a count of students who joined through it. |
+| App updates | Current version and release notes (edit `app/releases.py` and `APP_VERSION` in `config.py` for each release). |
+| Delete account | Anonymises the account, takes down listings. Blocked while a transaction or dispute is open. |
+
+Not built yet, shown as "Coming soon" or left out: notifications settings,
+parental control, live location, voice notes, chat transfer, passkeys, adding a
+second account, and blocking access 14 days after a new version.
+
+### Upgrading an existing database
+
+Run these once after copying the new code, and before opening the site:
+
+```bash
+flask --app run.py upgrade-db
+```
+
+It adds the new columns and tables and never deletes or changes existing data.
+Without it, logins fail because the users table is missing the new columns.
+
+### Tests
+
+```bash
+python tests/test_settings_logic.py
+```
+
+
+## Receipts and chat offers (version 1.3.0)
+
+- **Offers in chat** now have an Accept, Decline and Withdraw step. Only the other
+  person can accept or decline, and only an offer that is lower than the listed
+  price is allowed. A new offer replaces your earlier one that is still waiting.
+- **Where the price comes from.** When a purchase starts, the server uses the newest
+  accepted offer between that buyer and the seller if it is still valid
+  (`OFFER_VALID_HOURS` in `config.py`, default 48 hours from the moment it was
+  accepted). Otherwise it uses the listing price. The browser never sends a price.
+- **Receipts** say "Price from: Listing", or "Price from: Chat offer, accepted
+  <date and time>" together with the listed price, the agreed price and the
+  difference. These are saved on the transaction, so a receipt never changes
+  later, even if the listing is edited or the chat is deleted.
+- Accepting an offer replaces any other waiting or accepted offer in that chat, so there is only ever one agreed price. An accepted offer can only be paid for once.
+- After copying the new code, run `flask --app run.py upgrade-db` again. It adds
+  the new columns without touching existing data. Older receipts show
+  "Price from: Listing".
+- Test: `python tests/test_pricing_rules.py`
+
+
+## Version 2.0: security, under-18 accounts and cleaner flows
+
+**Safe by default.** With no `FLASK_ENV` set the app starts as the live site and refuses to run
+without a strong `SECRET_KEY` (32+ characters). Local work needs `FLASK_ENV=development`. The Flask
+debugger is only ever on for the local address 127.0.0.1.
+
+**Accounts and sign-in**
+- Email must be confirmed before anyone can sign in (a link is emailed). Sign-ups close if email
+  sending is not set up on a live site.
+- 5 wrong passwords in 15 minutes locks sign-in for that account (and 30 per network address);
+  wrong two-step codes, password resets, sign-ups and Settings password checks have limits too.
+  Counts are stored as one-way hashes. The account owner is emailed when a lock starts.
+- Passwords: at least 10 characters, and common ones ("Password123!") are refused.
+- Reset, verification, guardian and sign-in tokens are stored only as hashes. A password change or
+  reset signs the account out on every other device.
+- Administrators must turn on two-step verification before using `/admin`. Admin actions are logged.
+- Logout is a protected POST. Sign-in activity is listed in Settings > Account.
+
+**Under 18**
+- Date of birth at sign-up decides the side: learner (under 18) or adult. The sides never see,
+  message or trade with each other. This is enforced on the server in `app/sides.py`.
+- A learner's account stays locked until a parent or guardian confirms by email. The parent portal
+  (`/parent/sign-in`, one-time email link, no password) lets them read chats, listings and
+  purchases, pause the account, allow buying and selling (off by default), or close the account.
+- Learners: private profile, no phone number, no profile photo, swap and donate only unless a
+  guardian allows paid trades. They are told their guardian can read their chats.
+- Accounts without a date of birth (from before this version) are asked for one at next sign-in.
+  Only an administrator can correct a date of birth afterwards (Admin > Users).
+
+**Flows that were incomplete and now work:** a Requests page (`/transactions/requests`) lets owners
+accept or decline donation requests and swap offers; swap top-ups can now be paid; only one buyer can
+reserve an item; payment needs the item still held for that buyer; only the buyer confirms a hand-over;
+a price changed mid-checkout is never charged silently.
+
+**Checks you can run any time (no database needed)**
+```bash
+python tools/audit.py              # links, forms, CSRF, risky code
+python tools/static_check.py       # undefined names, unknown fields, broken imports
+python tests/test_security_rules.py
+python tests/test_pricing_rules.py
+python tests/test_settings_logic.py
+python -m unittest tests.test_app_flows -v     # needs the real libraries; run it once locally
+```
+
+**Upgrade an existing database** (after copying the new files, before opening the site):
+`flask --app run.py upgrade-db`. People who already have accounts keep working: their email counts
+as confirmed, and they are asked for a date of birth. Everyone is signed out once.

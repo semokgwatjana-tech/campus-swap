@@ -35,23 +35,20 @@
               <div class="neu-card p-3">
                 <div class="listing-img-wrap mb-2" style="height:100px; border-radius: 14px;">
                   <img src="{{ url_for('static', filename='uploads/' ~ item.primary_image) if item.images else url_for('static', filename='uploads/listings/placeholder.png') }}"
-                       onerror="this.src='{{ url_for('static', filename='uploads/listings/placeholder.png') }}'" alt="">
+                       data-fallback="{{ url_for('static', filename='uploads/listings/placeholder.png') }}" alt="">
                 </div>
                 <div class="fw-bold small text-truncate">{{ item.title }}</div>
                 <div class="listing-price small">{% if item.price and item.price > 0 %}{{ currency }}{{ '%.0f'|format(item.price) }}{% else %}Free{% endif %}</div>
               </div>
             </div>
             {% else %}
-            {% for placeholder in ["Financial Accounting Textbook", "Scientific Calculator", "Past Exam Papers", "Study Desk"] %}
-            <div class="col-6">
-              <div class="neu-card p-3">
-                <div class="listing-img-wrap mb-2" style="height:100px; border-radius: 14px;">
-                  <img src="{{ url_for('static', filename='uploads/listings/placeholder.png') }}" alt="">
-                </div>
-                <div class="fw-bold small">{{ placeholder }}</div>
+            <div class="col-12">
+              <div class="neu-card p-4 text-center">
+                <p class="fw-bold mb-1">No items listed yet</p>
+                <p class="small text-muted-navy mb-3">Items that students list will appear here.</p>
+                <a href="{{ url_for('auth.register') }}" class="btn-neu-primary">Join and list the first item</a>
               </div>
             </div>
-            {% endfor %}
             {% endfor %}
           </div>
         </div>

@@ -7,15 +7,19 @@ server-side validation (never trust client-side validation alone).
 
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
+from datetime import date
+
 from wtforms import (
     StringField, PasswordField, SelectField, TextAreaField, DecimalField,
-    BooleanField, HiddenField, IntegerField
+    BooleanField, HiddenField, IntegerField, DateField
 )
 from wtforms.validators import (
     DataRequired, Email, Length, EqualTo, Optional, NumberRange, ValidationError
 )
 
 from app.models import User
+from app.age_rules import dob_problem, side_of
+from app.security import password_problem, email_typo_hint
 
 
 CAMPUSES = [
@@ -36,7 +40,11 @@ class RegistrationForm(FlaskForm):
     campus = SelectField("Campus", choices=[(c, c) for c in CAMPUSES], validators=[DataRequired()])
     profile_picture = FileField("Profile Picture (optional)",
                                  validators=[Optional(), FileAllowed(["jpg", "jpeg", "png", "gif", "webp"])])
-    password = PasswordField("Password", validators=[DataRequired(), Length(min=8)])
+    date_of_birth = DateField("Date of birth", format="%Y-%m-%d",
+                              validators=[DataRequired(message="Enter your date of birth.")])
+    guardian_name = StringField("Parent or guardian name", validators=[Optional(), Length(max=120)])
+    guardian_email = StringField("Parent or guardian email", validators=[Optional(), Email(), Length(max=160)])
+    password = PasswordField("Password", validators=[DataRequired(), Length(min=10, max=128)])
     confirm_password = PasswordField(
         "Confirm Password",
         validators=[DataRequired(), EqualTo("password", message="Passwords must match.")]
@@ -47,12 +55,44 @@ class RegistrationForm(FlaskForm):
     )
 
     def validate_student_number(self, field):
-        if User.query.filter_by(student_number=field.data).first():
+        if User.query.filter_by(student_number=field.data.strip()).first():
             raise ValidationError("An account with this student number already exists.")
 
     def validate_school_email(self, field):
-        if User.query.filter_by(school_email=field.data.lower()).first():
+        hint = email_typo_hint(field.data)
+        if hint:
+            raise ValidationError(f"Check the spelling of the email address. {hint}")
+        if User.query.filter_by(school_email=field.data.lower().strip()).first():
             raise ValidationError("An account with this email already exists.")
+
+    def validate_date_of_birth(self, field):
+        problem = dob_problem(field.data, date.today())
+        if problem:
+            raise ValidationError(problem)
+
+    def validate_password(self, field):
+        problem = password_problem(field.data, self.school_email.data or "", self.full_name.data or "")
+        if problem:
+            raise ValidationError(problem)
+
+    def validate(self, extra_validators=None):
+        if not super().validate(extra_validators=extra_validators):
+            return False
+        if side_of(self.date_of_birth.data, date.today()) == "learner":
+            email = (self.guardian_email.data or "").lower().strip()
+            if not (self.guardian_name.data or "").strip():
+                self.guardian_name.errors = list(self.guardian_name.errors) + [
+                    "Enter the name of your parent or guardian. You are under 18."]
+                return False
+            if not email:
+                self.guardian_email.errors = list(self.guardian_email.errors) + [
+                    "Enter your parent or guardian's email. You are under 18."]
+                return False
+            if email == (self.school_email.data or "").lower().strip():
+                self.guardian_email.errors = list(self.guardian_email.errors) + [
+                    "Your parent or guardian needs their own email address."]
+                return False
+        return True
 
 
 class LoginForm(FlaskForm):
@@ -67,7 +107,7 @@ class ForgotPasswordForm(FlaskForm):
 
 class ResetPasswordForm(FlaskForm):
     token = HiddenField()
-    password = PasswordField("New Password", validators=[DataRequired(), Length(min=8)])
+    password = PasswordField("New Password", validators=[DataRequired(), Length(min=10, max=128)])
     confirm_password = PasswordField(
         "Confirm New Password",
         validators=[DataRequired(), EqualTo("password", message="Passwords must match.")]
@@ -83,7 +123,7 @@ class ListingForm(FlaskForm):
         choices=[("sell", "Sell"), ("swap", "Swap"), ("donate", "Donate")],
         validators=[DataRequired()],
     )
-    price = DecimalField("Price (R)", validators=[Optional(), NumberRange(min=0)], places=2)
+    price = DecimalField("Price (R)", validators=[Optional(), NumberRange(min=0, max=50000)], places=2)
     swap_for = StringField("What would you like in exchange?", validators=[Optional(), Length(max=255)])
     condition = SelectField(
         "Condition",
@@ -193,3 +233,45 @@ class SearchForm(FlaskForm):
     sort = SelectField("Sort by", choices=[
         ("newest", "Newest"), ("cheapest", "Cheapest"), ("popular", "Most Popular"),
     ], validators=[Optional()])
+
+
+class AgeGateForm(FlaskForm):
+    """Asked once of accounts that have no date of birth yet."""
+    date_of_birth = DateField("Date of birth", format="%Y-%m-%d",
+                              validators=[DataRequired(message="Enter your date of birth.")])
+    guardian_name = StringField("Parent or guardian name", validators=[Optional(), Length(max=120)])
+    guardian_email = StringField("Parent or guardian email", validators=[Optional(), Email(), Length(max=160)])
+
+    def validate_date_of_birth(self, field):
+        problem = dob_problem(field.data, date.today())
+        if problem:
+            raise ValidationError(problem)
+
+    def validate(self, extra_validators=None):
+        if not super().validate(extra_validators=extra_validators):
+            return False
+        if side_of(self.date_of_birth.data, date.today()) == "learner":
+            if not (self.guardian_name.data or "").strip() or not (self.guardian_email.data or "").strip():
+                self.guardian_email.errors = list(self.guardian_email.errors) + [
+                    "Enter your parent or guardian's name and email. You are under 18."]
+                return False
+        return True
+
+
+class GuardianContactForm(FlaskForm):
+    """A learner correcting or changing who their parent or guardian is."""
+    guardian_name = StringField("Parent or guardian name", validators=[DataRequired(), Length(max=120)])
+    guardian_email = StringField("Parent or guardian email", validators=[DataRequired(), Email(), Length(max=160)])
+
+
+class GuardianConfirmForm(FlaskForm):
+    guardian_name = StringField("Your full name", validators=[DataRequired(), Length(max=120)])
+    agree = BooleanField("agree", validators=[DataRequired(message="Please tick the box to confirm.")])
+
+
+class GuardianSignInForm(FlaskForm):
+    email = StringField("Your email", validators=[DataRequired(), Email(), Length(max=160)])
+
+
+class ResendVerificationForm(FlaskForm):
+    school_email = StringField("Email", validators=[DataRequired(), Email(), Length(max=160)])

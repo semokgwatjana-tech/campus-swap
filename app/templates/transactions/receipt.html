@@ -16,7 +16,7 @@
       <div class="receipt-row"><span>Item</span><span class="fw-semibold">{{ transaction.listing.title }}</span></div>
       <div class="receipt-row"><span>Buyer</span><span>{{ transaction.buyer.full_name }}</span></div>
       <div class="receipt-row"><span>Seller</span><span>{{ transaction.seller.full_name }}</span></div>
-      <div class="receipt-row"><span>Item price</span><span>{{ currency }}{{ "%.2f"|format(transaction.item_price) }}</span></div>
+      {% include "transactions/_price_rows.html" %}
       {% if transaction.service_fee %}<div class="receipt-row"><span>Service fee</span><span>{{ currency }}{{ "%.2f"|format(transaction.service_fee) }}</span></div>{% endif %}
       <div class="receipt-row fw-bold"><span>Amount paid</span><span>{{ currency }}{{ "%.2f"|format(transaction.total_amount) }}</span></div>
       <div class="receipt-row"><span>Payment method</span><span>{{ transaction.payment_method.value|replace('_',' ')|title }}</span></div>
@@ -32,11 +32,13 @@
         <button class="btn-neu-primary w-100" type="submit"><i class="bi bi-box-seam" aria-hidden="true"></i> Mark Ready for Pickup</button>
       </form>
       {% endif %}
-      {% if transaction.status.value in ["PAID", "READY_FOR_PICKUP"] %}
+      {% if current_user.id == transaction.buyer_id and transaction.status.value in ["PAID", "READY_FOR_PICKUP"] %}
       <form action="{{ url_for('transactions.complete_transaction', transaction_id=transaction.id) }}" method="POST" class="flex-grow-1">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
         <button class="btn-neu w-100" type="submit"><i class="bi bi-check2-circle" aria-hidden="true"></i> Confirm Handover Complete</button>
       </form>
+      {% elif current_user.id == transaction.seller_id and transaction.status.value in ["PAID", "READY_FOR_PICKUP"] %}
+      <p class="small text-muted-navy w-100 mb-0">The buyer confirms once the hand-over is done.</p>
       {% endif %}
       {% if transaction.status.value == "COMPLETED" %}
       <a href="{{ url_for('transactions.leave_review', transaction_id=transaction.id) }}" class="btn-neu-primary flex-grow-1 text-center"><i class="bi bi-star" aria-hidden="true"></i> Leave a Review</a>

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Two-step verification{% endblock %}
+{% block content %}
+<div class="container my-5">
+  <div class="neu-surface p-4 p-md-5 mx-auto" style="max-width:30rem">
+    <h1 class="h4 fw-bold mb-3">Two-step verification</h1>
+    <p>Enter the 6-digit code from your authenticator app, or one of your recovery codes.</p>
+    <form method="POST">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label for="code" class="form-label">Code</label>
+      <input id="code" name="code" class="form-control neu-input mb-3" autocomplete="one-time-code" autofocus required>
+      <button class="btn-neu-primary w-100" type="submit">Verify and log in</button>
+    </form>
+    <p class="small mt-3 mb-0"><a href="{{ url_for('auth.login') }}">Back to log in</a></p>
+  </div>
+</div>
+{% endblock %}

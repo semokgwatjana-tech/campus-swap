@@ -1,0 +1,31 @@
+{% extends "settings/_layout.html" %}
+{% block title %}Parental control{% endblock %}
+{% block page_title %}Parental control{% endblock %}
+{% block body %}
+{% if current_user.is_minor %}
+<div class="neu-surface p-4 mb-4">
+  <h2 class="h5 fw-bold">Your parent or guardian</h2>
+  {% if guardian %}
+  <p class="mb-1"><strong>{{ guardian.guardian_name or 'Parent or guardian' }}</strong> ({{ masked }}) confirmed your account{% if guardian.confirmed_at %} on {{ guardian.confirmed_at.strftime('%d %b %Y') }}{% endif %}.</p>
+  {% elif pending %}
+  <p class="mb-1">Waiting for {{ masked }} to confirm.</p>
+  {% else %}<p class="mb-1">No parent or guardian is linked yet.</p>{% endif %}
+</div>
+<div class="neu-surface p-4">
+  <h2 class="h5 fw-bold">What applies to you</h2>
+  <ul class="mb-2">
+    <li>You only see and trade with other people under 18.</li>
+    <li>Your profile is private, and there is no phone number or profile photo.</li>
+    <li>You can swap and donate. Buying and selling is {{ "allowed" if current_user.allow_paid_trades else "off unless your parent or guardian allows it" }}.</li>
+    <li>Your parent or guardian can read your chats, listings and purchases, pause your account, or close it.</li>
+    <li>Hand-overs happen only at the public pickup points listed at checkout.</li>
+  </ul>
+  <p class="small text-muted-navy mb-0">When you turn 18 you move to the adult side automatically and these limits end.</p>
+</div>
+{% else %}
+<div class="neu-surface p-4">
+  <p>This is for accounts under 18. Learners and adults are kept on separate sides of Campus Swap: learners only see and trade with other learners, and a parent or guardian confirms each learner's account and can supervise it.</p>
+  <p class="mb-0">If you are the parent or guardian of a learner on Campus Swap, open the <a href="{{ url_for('parents.sign_in') }}">parent portal</a>.</p>
+</div>
+{% endif %}
+{% endblock %}

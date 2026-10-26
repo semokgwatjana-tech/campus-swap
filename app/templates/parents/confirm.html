@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Confirm a learner's account{% endblock %}
+{% block content %}
+<div class="container my-5">
+  <div class="neu-surface p-4 p-md-5 mx-auto" style="max-width:44rem">
+    <h1 class="h3 fw-bold mb-2">Confirm {{ learner.full_name }}'s Campus Swap account</h1>
+    <p>Campus Swap is a marketplace where students buy, sell, swap and donate study materials. {{ learner.full_name }} is under 18 and has asked to join. Their account stays locked until a parent or legal guardian agrees.</p>
+
+    <h2 class="h5 fw-bold mt-4">What this means for your child</h2>
+    <ul>
+      <li>Learners are kept apart from adults. They only see, message and trade with other learners.</li>
+      <li>Their profile is private, with no phone number and no profile photo.</li>
+      <li>They can swap and donate. Buying and selling is off unless you switch it on in the parent portal.</li>
+      <li>Hand-overs happen only at the public pickup points listed at checkout.</li>
+      <li>You can read their chats, listings and purchases, pause the account, or close it at any time.</li>
+      <li>Your child is told that you can see their chats.</li>
+    </ul>
+
+    <h2 class="h5 fw-bold mt-4">What we keep</h2>
+    <p>Their name, school or learner number, email address, date of birth, campus, listings, messages and transaction records. We use it to run the marketplace, verify students and keep people safe. We do not use it for advertising and do not sell it. Read the full <a href="{{ url_for('main.privacy_policy') }}" target="_blank" rel="noopener">Privacy Policy</a> and <a href="{{ url_for('main.terms') }}" target="_blank" rel="noopener">Terms</a>. Questions: {{ business.information_officer_email or business.support_email }}.</p>
+
+    <form method="POST" class="mt-4">
+      {{ form.hidden_tag() }}
+      <div class="mb-3">
+        <label for="{{ form.guardian_name.id }}" class="form-label">Your full name</label>
+        <input id="{{ form.guardian_name.id }}" name="{{ form.guardian_name.name }}" value="{{ form.guardian_name.data or '' }}" class="form-control neu-input" required>
+        {% for e in form.guardian_name.errors %}<div class="text-danger small mt-1" role="alert">{{ e }}</div>{% endfor %}
+      </div>
+      <div class="form-check mb-3">
+        <input class="form-check-input" type="checkbox" id="{{ form.agree.id }}" name="{{ form.agree.name }}" value="y">
+        <label class="form-check-label" for="{{ form.agree.id }}">I am the parent or legal guardian of {{ learner.full_name }}. I have read the above and I agree that they may use Campus Swap, and that their information is used as described.</label>
+        {% for e in form.agree.errors %}<div class="text-danger small mt-1" role="alert">{{ e }}</div>{% endfor %}
+      </div>
+      <button class="btn-neu-primary" type="submit">Confirm</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

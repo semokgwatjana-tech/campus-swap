@@ -1,4 +1,4 @@
-from flask import render_template, redirect, url_for, flash, request, jsonify
+from flask import render_template, redirect, url_for, flash, request, jsonify, abort
 from flask_login import login_required, current_user
 
 from app.marketplace import marketplace_bp
@@ -6,10 +6,11 @@ from app.extensions import db
 from app.forms import ListingForm, ReportForm, SearchForm
 from app.models import (
     Listing, ListingImage, Category, ListingStatus, ListingType,
-    ListingCondition, Report, Wishlist
+    ListingCondition, Report, ReportStatus, Wishlist
 )
-from app.utils import save_uploaded_image
-from app.marketplace.ai_features import suggest_price, generate_listing_from_image, smart_search
+from app.utils import save_uploaded_image, sort_listings_for_user
+from app.marketplace.price_guide import price_guide
+from app.sides import visible_listings, can_view_listing
 
 
 # ---------------------------------------------------------------------------
@@ -23,12 +24,15 @@ def browse():
         (c.slug, c.name) for c in Category.query.order_by(Category.name).all()
     ]
 
-    query = Listing.query.filter(Listing.status.in_([ListingStatus.ACTIVE, ListingStatus.RESERVED]))
+    # Only listings from the viewer's own side (learners / adults), from active sellers.
+    query = visible_listings(current_user).filter(Listing.status.in_([ListingStatus.ACTIVE, ListingStatus.RESERVED]))
 
-    q = request.args.get("q", "").strip()
+    q = request.args.get("q", "").strip()[:100]
     if q:
-        like = f"%{q}%"
-        query = query.filter(db.or_(Listing.title.ilike(like), Listing.description.ilike(like)))
+        escaped = q.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+        like = f"%{escaped}%"
+        query = query.filter(db.or_(Listing.title.ilike(like, escape="\\"),
+                                    Listing.description.ilike(like, escape="\\")))
 
     category_slug = request.args.get("category", "")
     if category_slug:
@@ -40,12 +44,13 @@ def browse():
     if campus:
         query = query.filter(Listing.campus == campus)
 
+    # Unknown values in the web address are ignored instead of crashing the page.
     condition = request.args.get("condition", "")
-    if condition:
+    if condition in {c.value for c in ListingCondition}:
         query = query.filter(Listing.condition == ListingCondition(condition))
 
     listing_type = request.args.get("listing_type", "")
-    if listing_type:
+    if listing_type in {t.value for t in ListingType}:
         query = query.filter(Listing.listing_type == ListingType(listing_type))
 
     sort = request.args.get("sort", "newest")
@@ -77,7 +82,8 @@ def browse():
 @marketplace_bp.route("/donations")
 def donations():
     listings = (
-        Listing.query.filter_by(listing_type=ListingType.DONATE, status=ListingStatus.ACTIVE)
+        visible_listings(current_user)
+        .filter(Listing.listing_type == ListingType.DONATE, Listing.status == ListingStatus.ACTIVE)
         .order_by(Listing.posted_at.desc())
         .all()
     )
@@ -87,19 +93,12 @@ def donations():
 @marketplace_bp.route("/swap-board")
 def swap_board():
     listings = (
-        Listing.query.filter_by(listing_type=ListingType.SWAP, status=ListingStatus.ACTIVE)
+        visible_listings(current_user)
+        .filter(Listing.listing_type == ListingType.SWAP, Listing.status == ListingStatus.ACTIVE)
         .order_by(Listing.posted_at.desc())
         .all()
     )
     return render_template("marketplace/swap_board.html", listings=listings)
-
-
-@marketplace_bp.route("/api/smart-search")
-def api_smart_search():
-    query_text = request.args.get("q", "")
-    if not query_text.strip():
-        return jsonify({"error": "empty query"}), 400
-    return jsonify(smart_search(query_text))
 
 
 # ---------------------------------------------------------------------------
@@ -109,12 +108,16 @@ def api_smart_search():
 @marketplace_bp.route("/listing/<int:listing_id>")
 def listing_detail(listing_id):
     listing = Listing.query.get_or_404(listing_id)
+    # Removed, waiting for approval, or on the other side: the page does not exist for this viewer.
+    if not can_view_listing(current_user, listing):
+        abort(404)
     listing.release_reservation_if_expired()
-    listing.views_count = (listing.views_count or 0) + 1
+    if not (current_user.is_authenticated and current_user.id == listing.seller_id):
+        listing.views_count = (listing.views_count or 0) + 1
     db.session.commit()
 
     related = (
-        Listing.query.filter(
+        visible_listings(current_user).filter(
             Listing.category_id == listing.category_id,
             Listing.id != listing.id,
             Listing.status == ListingStatus.ACTIVE,
@@ -142,8 +145,15 @@ def listing_detail(listing_id):
 @login_required
 def report_listing(listing_id):
     listing = Listing.query.get_or_404(listing_id)
+    if not can_view_listing(current_user, listing):
+        abort(404)
     form = ReportForm()
-    if form.validate_on_submit():
+    if listing.seller_id == current_user.id:
+        flash("You cannot report your own listing.", "info")
+    elif Report.query.filter_by(reporter_id=current_user.id, listing_id=listing.id,
+                                status=ReportStatus.OPEN).first():
+        flash("You have already reported this listing. Our team will look at it.", "info")
+    elif form.validate_on_submit():
         report = Report(
             reporter_id=current_user.id,
             listing_id=listing.id,
@@ -170,6 +180,10 @@ def sell():
     form.category_id.choices = [(c.id, c.name) for c in Category.query.order_by(Category.name).all()]
 
     if form.validate_on_submit():
+        if current_user.is_minor and not current_user.allow_paid_trades and form.listing_type.data == "sell":
+            flash("Selling for money needs your parent or guardian's permission. You can list items to swap or donate.",
+                  "info")
+            return render_template("marketplace/sell.html", form=form)
         listing = Listing(
             seller_id=current_user.id,
             category_id=form.category_id.data,
@@ -209,22 +223,15 @@ def sell_preview():
     return render_template("marketplace/_listing_preview.html", form=form, category=category)
 
 
-@marketplace_bp.route("/api/ai/suggest-price")
+@marketplace_bp.route("/api/price-guide")
 @login_required
-def api_suggest_price():
-    category_slug = request.args.get("category", "textbooks")
-    condition = request.args.get("condition", "Good")
-    title = request.args.get("title", "")
-    return jsonify(suggest_price(category_slug, condition, title))
-
-
-@marketplace_bp.route("/api/ai/generate-listing", methods=["POST"])
-@login_required
-def api_generate_listing():
-    hint = request.form.get("hint_text", "")
-    # In production the uploaded photo (request.files.get('photo')) would be
-    # sent to a vision-capable AI model here.
-    return jsonify(generate_listing_from_image(hint_text=hint))
+def api_price_guide():
+    """Real Campus Swap prices for similar items. See price_guide.py."""
+    try:
+        category_id = int(request.args.get("category_id", ""))
+    except ValueError:
+        return jsonify({"available": False, "message": "Choose a category first."}), 400
+    return jsonify(price_guide(category_id, request.args.get("condition")))
 
 
 @marketplace_bp.route("/listing/<int:listing_id>/edit", methods=["GET", "POST"])
@@ -234,6 +241,10 @@ def edit_listing(listing_id):
     if listing.seller_id != current_user.id and not current_user.is_admin:
         flash("You can only edit your own listings.", "danger")
         return redirect(url_for("marketplace.listing_detail", listing_id=listing.id))
+    # A reserved, sold or removed item cannot change under a buyer's feet.
+    if listing.status not in (ListingStatus.ACTIVE, ListingStatus.PENDING_APPROVAL):
+        flash("This listing can no longer be edited because it is reserved, finished or removed.", "info")
+        return redirect(url_for("marketplace.listing_detail", listing_id=listing.id))
 
     form = ListingForm(obj=listing)
     form.category_id.choices = [(c.id, c.name) for c in Category.query.order_by(Category.name).all()]
@@ -242,6 +253,11 @@ def edit_listing(listing_id):
         form.condition.data = listing.condition.value
 
     if form.validate_on_submit():
+        seller = listing.seller
+        if seller.is_minor and not seller.allow_paid_trades and form.listing_type.data == "sell":
+            flash("Selling for money needs a parent or guardian's permission. The listing can be a swap or a donation.",
+                  "info")
+            return render_template("marketplace/sell.html", form=form, editing=True, listing=listing)
         listing.title = form.title.data.strip()
         listing.description = form.description.data.strip()
         listing.category_id = form.category_id.data
@@ -269,6 +285,9 @@ def delete_listing(listing_id):
     if listing.seller_id != current_user.id and not current_user.is_admin:
         flash("You can only remove your own listings.", "danger")
         return redirect(url_for("marketplace.listing_detail", listing_id=listing.id))
+    if listing.status not in (ListingStatus.ACTIVE, ListingStatus.PENDING_APPROVAL):
+        flash("A listing cannot be removed while it is reserved or after it has been sold, swapped or donated.", "info")
+        return redirect(url_for("marketplace.listing_detail", listing_id=listing.id))
     listing.status = ListingStatus.REMOVED
     db.session.commit()
     flash("Listing removed.", "info")
@@ -283,4 +302,5 @@ def my_listings():
         .order_by(Listing.posted_at.desc())
         .all()
     )
+    listings = sort_listings_for_user(listings, current_user.id)
     return render_template("marketplace/my_listings.html", listings=listings)

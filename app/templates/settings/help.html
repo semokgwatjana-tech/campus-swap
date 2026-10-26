@@ -1,0 +1,43 @@
+{% extends "settings/_layout.html" %}
+{% block title %}Help and feedback{% endblock %}
+{% block page_title %}Help and feedback{% endblock %}
+{% block body %}
+<div class="neu-surface p-4 mb-4">
+  <h2 class="h5 fw-bold">Help centre</h2>
+  <div class="accordion accordion-flush" id="faq">
+    {% for q, a in [
+      ("How do I buy something?", "Open a listing, choose Buy, pick a safe campus pickup point, and pay at checkout. The seller is told straight away and you meet at the pickup point."),
+      ("How do swaps and donations work?", "For a swap you offer one of your listings, optionally with a cash top-up, and the owner accepts or declines. Donations are free: you request the item and the donor approves."),
+      ("Where do I meet the other student?", "Only at the public campus pickup points offered at checkout. Do not share a home address."),
+      ("What if the item was not as described?", "Open the purchase from My Purchases and raise a dispute. An admin reviews it. See the Refund Policy for what can be refunded."),
+      ("How do I become verified?", "An admin confirms your student status. A Verified Student badge appears on your profile when that is done."),
+      ("I forgot my password.", "On the log in page choose Forgot password and we will email you a link."),
+    ] %}
+    <div class="accordion-item bg-transparent">
+      <h3 class="accordion-header"><button class="accordion-button collapsed bg-transparent" type="button" data-bs-toggle="collapse" data-bs-target="#faq{{ loop.index }}" aria-expanded="false" aria-controls="faq{{ loop.index }}">{{ q }}</button></h3>
+      <div id="faq{{ loop.index }}" class="accordion-collapse collapse" data-bs-parent="#faq"><div class="accordion-body">{{ a }}</div></div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="neu-surface p-4 mb-4">
+  <h2 class="h5 fw-bold">Get in touch</h2>
+  <div class="d-flex flex-wrap gap-2 mb-3">
+    <a class="btn-neu-primary" href="{{ url_for('settings.send_feedback', kind='contact') }}">Contact us</a>
+    <a class="btn-neu" href="{{ url_for('settings.send_feedback', kind='feedback') }}">Send feedback</a>
+    <a class="btn-neu" href="{{ url_for('settings.send_feedback', kind='issue') }}">Report a technical issue</a>
+  </div>
+  <p class="small mb-0">Or reach us directly: {{ business.support_email }}{% if business.phone %}, {{ business.phone }}{% endif %}.</p>
+</div>
+
+<div class="neu-surface p-4">
+  <h2 class="h5 fw-bold">Legal and app info</h2>
+  <ul class="list-unstyled mb-3">
+    <li><a href="{{ url_for('main.terms') }}">Terms and Conditions</a></li>
+    <li><a href="{{ url_for('main.privacy_policy') }}">Privacy Policy</a></li>
+    <li><a href="{{ url_for('main.refund_policy') }}">Refund Policy</a></li>
+  </ul>
+  <p class="small text-muted-navy mb-0">Campus Swap version {{ app_version }}. Operated by {{ business.name }}, {{ business.address }}.</p>
+</div>
+{% endblock %}

@@ -5,13 +5,14 @@
   <h3 class="fw-bold mb-4">Manage Users</h3>
   <div class="neu-surface p-0 overflow-hidden">
     <table class="table mb-0 align-middle">
-      <thead><tr class="text-muted-navy small"><th class="ps-4">Name</th><th>Email</th><th>Student No.</th><th>Status</th><th class="pe-4 text-end">Actions</th></tr></thead>
+      <thead><tr class="text-muted-navy small"><th class="ps-4">Name</th><th>Email</th><th>Student No.</th><th>Side</th><th>Status</th><th class="pe-4 text-end">Actions</th></tr></thead>
       <tbody>
         {% for u in users %}
         <tr>
           <td class="ps-4 fw-semibold">{{ u.full_name }}{% if u.is_admin %} <span class="badge-pill-sm">Admin</span>{% endif %}</td>
           <td>{{ u.school_email }}</td>
           <td>{{ u.student_number }}</td>
+          <td>{{ {"learner": "Learner (under 18)", "adult": "Adult"}.get(u.side, "No date of birth") }}</td>
           <td>
             {% if u.is_verified %}<span class="verified-badge"><i class="bi bi-patch-check-fill" aria-hidden="true"></i> Verified</span>{% else %}<span class="text-warning small">Pending</span>{% endif %}
             {% if not u.is_active_account %}<span class="text-danger small ms-2">Suspended</span>{% endif %}
@@ -23,6 +24,15 @@
               <button class="btn-neu btn-sm" type="submit"><i class="bi bi-patch-check" aria-hidden="true"></i> Verify</button>
             </form>
             {% endif %}
+            <details class="d-inline-block text-start me-1">
+              <summary class="btn-neu btn-sm d-inline-block">Date of birth</summary>
+              <form action="{{ url_for('admin.set_date_of_birth', user_id=u.id) }}" method="POST" class="p-2">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <input type="date" name="date_of_birth" value="{{ u.date_of_birth.isoformat() if u.date_of_birth else '' }}" class="form-control neu-input mb-1" aria-label="Date of birth for {{ u.full_name }}" required>
+                <input name="reason" class="form-control neu-input mb-1" placeholder="Reason for the change" aria-label="Reason" minlength="5" required>
+                <button class="btn-neu btn-sm" type="submit">Save</button>
+              </form>
+            </details>
             <form action="{{ url_for('admin.suspend_user', user_id=u.id) }}" method="POST" class="d-inline">
               <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
               <button class="btn-neu-danger btn-sm" type="submit">{{ "Reinstate" if not u.is_active_account else "Suspend" }}</button>

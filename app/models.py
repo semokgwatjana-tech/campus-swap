@@ -121,7 +121,14 @@ class User(UserMixin, db.Model):
     role = db.Column(db.Enum(UserRole), default=UserRole.STUDENT, nullable=False)
     is_verified = db.Column(db.Boolean, default=False)          # student verification
     is_active_account = db.Column(db.Boolean, default=True)     # admin can suspend
-    email_confirmed = db.Column(db.Boolean, default=False)
+    email_confirmed = db.Column(db.Boolean, default=False)       # the person clicked the emailed link
+    email_token_hash = db.Column(db.String(64), nullable=True)   # sha256 of the emailed link token
+    email_token_expires = db.Column(db.DateTime, nullable=True)
+    email_token_sent_at = db.Column(db.DateTime, nullable=True)
+    session_version = db.Column(db.Integer, default=0, nullable=False)   # raised to log out every device
+    date_of_birth = db.Column(db.Date, nullable=True)
+    parent_paused = db.Column(db.Boolean, default=False, nullable=False)       # a guardian paused this account
+    allow_paid_trades = db.Column(db.Boolean, default=False, nullable=False)   # a guardian allowed buying and selling
 
     password_reset_token = db.Column(db.String(100), nullable=True)
     password_reset_expires = db.Column(db.DateTime, nullable=True)
@@ -129,14 +136,45 @@ class User(UserMixin, db.Model):
     trust_score = db.Column(db.Float, default=0.0)              # derived from reviews
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+    # --- Settings: account and security ---------------------------------
+    username = db.Column(db.String(30), unique=True, nullable=True, index=True)
+    phone_number = db.Column(db.String(30), nullable=True)      # stored as typed, not verified
+    pending_email = db.Column(db.String(160), nullable=True)    # new address awaiting confirmation
+    pending_email_token = db.Column(db.String(100), nullable=True)
+    pending_email_expires = db.Column(db.DateTime, nullable=True)
+    two_factor_enabled = db.Column(db.Boolean, default=False)
+    two_factor_secret = db.Column(db.String(64), nullable=True)
+    recovery_codes = db.Column(db.Text, nullable=True)          # JSON list of password hashes
+    invite_code = db.Column(db.String(16), unique=True, nullable=True, index=True)
+    referred_by_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
+    deleted_at = db.Column(db.DateTime, nullable=True)
+
+    def get_id(self):
+        """Flask-Login stores this in the session. It includes session_version, so
+        raising that number signs the account out everywhere."""
+        return f"{self.id}:{self.session_version or 0}"
+
+    @property
+    def side(self):
+        """'learner' (under 18), 'adult', or None when no date of birth is stored."""
+        from datetime import date
+        from app.age_rules import side_of
+        return side_of(self.date_of_birth, date.today())
+
+    @property
+    def is_minor(self):
+        return self.side == "learner"
+
     profile = db.relationship("Profile", back_populates="user", uselist=False,
                                cascade="all, delete-orphan")
     listings = db.relationship("Listing", back_populates="seller",
                                 foreign_keys="Listing.seller_id")
 
+    
     # Flask-Login required overrides
     def get_id(self):
-        return str(self.id)
+        """Include the session version so invalidated sessions are rejected."""
+        return f"{self.id}:{self.session_version or 0}"
 
     @property
     def is_active(self):
@@ -147,6 +185,7 @@ class User(UserMixin, db.Model):
 
     def check_password(self, raw_password):
         return check_password_hash(self.password_hash, raw_password)
+
 
     @property
     def is_admin(self):
@@ -312,6 +351,8 @@ class Message(db.Model):
     body = db.Column(db.Text, nullable=True)
     image_filename = db.Column(db.String(255), nullable=True)
     offer_price = db.Column(db.Numeric(10, 2), nullable=True)
+    offer_status = db.Column(db.String(12), nullable=True)      # pending / accepted / declined / withdrawn / used
+    offer_responded_at = db.Column(db.DateTime, nullable=True)
     proposed_pickup = db.Column(db.String(120), nullable=True)
 
     is_read = db.Column(db.Boolean, default=False)
@@ -388,6 +429,14 @@ class Transaction(db.Model):
     status = db.Column(db.Enum(TransactionStatus), default=TransactionStatus.PENDING, index=True)
 
     pickup_location = db.Column(db.String(120), nullable=True)
+
+    # Where the price came from. Stored on the transaction itself so the receipt
+    # never changes, even if the listing is edited or the chat is deleted later.
+    price_source = db.Column(db.String(12), nullable=False, default="listing")   # "listing" or "chat_offer"
+    listed_price = db.Column(db.Numeric(10, 2), nullable=True)
+    offer_message_id = db.Column(db.Integer, nullable=True)                      # plain id, not a foreign key
+    offer_accepted_at = db.Column(db.DateTime, nullable=True)
+
     gateway_reference = db.Column(db.String(80), nullable=True)   # id returned by the sandbox/provider
 
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -552,3 +601,122 @@ class PlatformSetting(db.Model):
             row = PlatformSetting(key=key, value=str(value))
             db.session.add(row)
         db.session.commit()
+
+
+# ---------------------------------------------------------------------------
+# Settings and feedback
+# ---------------------------------------------------------------------------
+
+THEMES = ("light", "dark", "blue", "velvet")
+LIST_GROUPS = ("sell", "swap", "donate")
+
+
+class UserSettings(db.Model):
+    """One row per person. Created the first time it is needed, so existing
+    accounts keep working without a data migration."""
+
+    __tablename__ = "user_settings"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), unique=True, nullable=False)
+
+    theme = db.Column(db.String(10), default="light", nullable=False)
+    increase_contrast = db.Column(db.Boolean, default=False, nullable=False)
+    animations_enabled = db.Column(db.Boolean, default=True, nullable=False)
+    profile_visibility = db.Column(db.String(10), default="public", nullable=False)  # public / private
+    list_order = db.Column(db.String(40), default="sell,swap,donate", nullable=False)
+    security_alerts = db.Column(db.Boolean, default=True, nullable=False)
+
+    @classmethod
+    def for_user(cls, user_id):
+        row = cls.query.filter_by(user_id=user_id).first()
+        if row is None:
+            row = cls(user_id=user_id)
+            db.session.add(row)
+            db.session.commit()
+        return row
+
+    def ordered_groups(self):
+        parts = [p for p in (self.list_order or "").split(",") if p in LIST_GROUPS]
+        for g in LIST_GROUPS:
+            if g not in parts:
+                parts.append(g)
+        return parts
+
+
+class Feedback(db.Model):
+    """Feedback, technical issue reports and contact messages from Help and feedback."""
+
+    __tablename__ = "feedback"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
+    kind = db.Column(db.String(20), nullable=False)               # feedback / issue / contact
+    subject = db.Column(db.String(160), nullable=False)
+    message = db.Column(db.Text, nullable=False)
+    app_version = db.Column(db.String(20), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+# ---------------------------------------------------------------------------
+# Security: attempts, activity, and parent/guardian links
+# ---------------------------------------------------------------------------
+
+class LoginAttempt(db.Model):
+    """Counts of failed or repeated actions, used for rate limiting. Holds only
+    one-way hashes of the email and address, never the values themselves."""
+
+    __tablename__ = "login_attempts"
+
+    id = db.Column(db.Integer, primary_key=True)
+    kind = db.Column(db.String(20), nullable=False, index=True)
+    key_hash = db.Column(db.String(64), nullable=False, index=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+
+
+class SecurityEvent(db.Model):
+    """What happened on an account (sign-ins, password changes, guardian actions,
+    admin actions). Shown to the person as sign-in activity. Kept for 90 days."""
+
+    __tablename__ = "security_events"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True, index=True)
+    kind = db.Column(db.String(40), nullable=False)
+    detail = db.Column(db.String(200), nullable=True)
+    ip_hash = db.Column(db.String(64), nullable=True)
+    user_agent = db.Column(db.String(200), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+
+
+class Guardian(db.Model):
+    """A parent or guardian of a learner (under 18). The learner's account stays
+    locked until one guardian confirms."""
+
+    __tablename__ = "guardians"
+
+    id = db.Column(db.Integer, primary_key=True)
+    learner_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False, index=True)
+    guardian_name = db.Column(db.String(120), nullable=True)
+    guardian_email = db.Column(db.String(160), nullable=False, index=True)
+    status = db.Column(db.String(12), default="pending", nullable=False)   # pending / confirmed / revoked / ended
+    token_hash = db.Column(db.String(64), nullable=True)
+    token_expires = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    confirmed_at = db.Column(db.DateTime, nullable=True)
+    ended_at = db.Column(db.DateTime, nullable=True)
+
+    learner = db.relationship("User", foreign_keys=[learner_id])
+
+
+class GuardianSignIn(db.Model):
+    """A one-time, short-lived link that lets a guardian into the parent portal."""
+
+    __tablename__ = "guardian_sign_ins"
+
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(160), nullable=False, index=True)
+    token_hash = db.Column(db.String(64), nullable=False, index=True)
+    expires_at = db.Column(db.DateTime, nullable=False)
+    used_at = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)

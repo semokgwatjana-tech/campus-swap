@@ -90,3 +90,12 @@ def calculate_service_fee(item_price):
                                        current_app.config["DEFAULT_SERVICE_FEE_FIXED"]))
     fee = round(float(item_price) * (percent / 100.0) + fixed, 2)
     return fee
+
+
+def sort_listings_for_user(listings, user_id):
+    """Order a person's listings by the list order they chose in Settings > Lists.
+    Python's sort is stable, so the newest-first order inside each group is kept."""
+    from app.models import UserSettings
+    row = UserSettings.query.filter_by(user_id=user_id).first()
+    order = row.ordered_groups() if row else ["sell", "swap", "donate"]
+    return sorted(listings, key=lambda l: order.index(l.listing_type.value))

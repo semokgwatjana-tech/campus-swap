@@ -1,0 +1,30 @@
+{% extends "settings/_layout.html" %}
+{% block title %}Invite a friend{% endblock %}
+{% block page_title %}Invite a friend{% endblock %}
+{% block body %}
+<div class="neu-surface p-4">
+  <p>Share your personal link. Students who sign up with it are counted here.</p>
+  <label for="invite-link" class="form-label">Your invite link</label>
+  <div class="input-group mb-3">
+    <input id="invite-link" class="form-control neu-input" value="{{ link }}" readonly>
+    <button class="btn-neu" type="button" id="copy-link">Copy</button>
+  </div>
+  <button class="btn-neu-primary d-none" type="button" id="share-link">Share</button>
+  <p class="mt-3 mb-0" role="status" id="invite-status"></p>
+  <hr>
+  <p class="mb-0"><strong>{{ joined }}</strong> student{{ "" if joined == 1 else "s" }} joined with your link.</p>
+</div>
+{% endblock %}
+{% block extra_scripts %}
+<script nonce="{{ csp_nonce }}">
+  const link = document.getElementById("invite-link").value, status = document.getElementById("invite-status");
+  document.getElementById("copy-link").addEventListener("click", async () => {
+    try { await navigator.clipboard.writeText(link); status.textContent = "Link copied."; }
+    catch (e) { document.getElementById("invite-link").select(); status.textContent = "Press copy on your keyboard to copy the selected link."; }
+  });
+  if (navigator.share) {
+    const b = document.getElementById("share-link"); b.classList.remove("d-none");
+    b.addEventListener("click", () => navigator.share({ title: "Campus Swap", text: "Buy, sell, swap and donate textbooks on campus.", url: link }).catch(() => {}));
+  }
+</script>
+{% endblock %}

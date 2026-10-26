@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Confirmed{% endblock %}
+{% block content %}
+<div class="container my-5">
+  <div class="neu-surface p-4 p-md-5 mx-auto text-center" style="max-width:36rem">
+    <h1 class="h3 fw-bold mb-2">Thank you</h1>
+    <p>{{ learner.full_name }} can now use Campus Swap.</p>
+    <p class="text-muted-navy">You can read their chats, pause the account or change what they are allowed to do in the parent portal. Ask for a sign-in link with the same email address this message was sent to.</p>
+    <a class="btn-neu-primary d-inline-block" href="{{ url_for('parents.sign_in') }}">Open the parent portal</a>
+  </div>
+</div>
+{% endblock %}

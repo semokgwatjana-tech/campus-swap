@@ -8,6 +8,7 @@
     <div class="neu-inset p-3 my-3">
       <div class="receipt-row"><span>Reference</span><span>{{ transaction.reference }}</span></div>
       <div class="receipt-row"><span>Buyer</span><span>{{ transaction.buyer.full_name }}</span></div>
+      {% include "transactions/_price_rows.html" %}
       <div class="receipt-row"><span>Amount</span><span>{{ currency }}{{ "%.2f"|format(transaction.total_amount) }}</span></div>
       <div class="receipt-row"><span>Pickup location</span><span>{{ transaction.pickup_location or "N/A" }}</span></div>
       <div class="receipt-row"><span>Date</span><span>{{ transaction.created_at.strftime('%d %b %Y, %H:%M') }}</span></div>

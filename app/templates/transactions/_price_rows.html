@@ -1,0 +1,10 @@
+{#- Price lines shared by checkout, receipt and the seller's sale page. Reads only the saved transaction. -#}
+{% if transaction.price_source == "chat_offer" and transaction.listed_price %}
+<div class="receipt-row"><span>Listed price</span><span>{{ currency }}{{ "%.2f"|format(transaction.listed_price) }}</span></div>
+<div class="receipt-row"><span>Agreed price</span><span class="fw-semibold">{{ currency }}{{ "%.2f"|format(transaction.item_price) }}</span></div>
+<div class="receipt-row"><span>Difference from listed price</span><span>-{{ currency }}{{ "%.2f"|format(transaction.listed_price - transaction.item_price) }}</span></div>
+<div class="receipt-row"><span>Price from</span><span>Chat offer{% if transaction.offer_accepted_at %}, accepted {{ transaction.offer_accepted_at.strftime('%d %b %Y, %H:%M') }}{% endif %}</span></div>
+{% else %}
+<div class="receipt-row"><span>Item price</span><span>{{ currency }}{{ "%.2f"|format(transaction.item_price) }}</span></div>
+<div class="receipt-row"><span>Price from</span><span>Listing</span></div>
+{% endif %}

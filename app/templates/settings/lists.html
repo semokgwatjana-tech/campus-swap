@@ -1,0 +1,22 @@
+{% extends "settings/_layout.html" %}
+{% block title %}Lists{% endblock %}
+{% block page_title %}Lists{% endblock %}
+{% block body %}
+<form method="POST" class="neu-surface p-4">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <p class="text-muted-navy">Choose which of your lists comes first on My Listings and on your profile. Each list needs its own position.</p>
+  {% for g in ["sell", "swap", "donate"] %}
+  <div class="row align-items-center mb-3">
+    <label class="col-sm-5 col-form-label fw-bold" for="rank_{{ g }}">{{ labels[g] }}</label>
+    <div class="col-sm-7">
+      <select id="rank_{{ g }}" name="rank_{{ g }}" class="form-select neu-input">
+        <option value="1" {{ "selected" if order.index(g) == 0 }}>Top</option>
+        <option value="2" {{ "selected" if order.index(g) == 1 }}>Middle</option>
+        <option value="3" {{ "selected" if order.index(g) == 2 }}>Bottom</option>
+      </select>
+    </div>
+  </div>
+  {% endfor %}
+  <button class="btn-neu-primary" type="submit">Save</button>
+</form>
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends "settings/_layout.html" %}
+{% block title %}App updates{% endblock %}
+{% block page_title %}App updates{% endblock %}
+{% block body %}
+<div class="neu-surface p-4 mb-4">
+  <p class="mb-1">Current version: <strong>{{ version }}</strong></p>
+  <button type="button" class="btn-neu-primary mt-2" id="check-update">Check for updates</button>
+  <p class="mt-3 mb-0" id="update-status" role="status"></p>
+</div>
+<div class="neu-surface p-4">
+  <h2 class="h5 fw-bold">Release notes</h2>
+  {% for r in releases %}
+  <h3 class="h6 fw-bold mt-3">Version {{ r.version }}, {{ r.date }}</h3>
+  <ul class="mb-0">{% for n in r.notes %}<li>{{ n }}</li>{% endfor %}</ul>
+  {% endfor %}
+</div>
+{% endblock %}
+{% block extra_scripts %}
+<script nonce="{{ csp_nonce }}">
+  document.getElementById("check-update").addEventListener("click", async () => {
+    const out = document.getElementById("update-status");
+    out.textContent = "Checking...";
+    try {
+      const reg = "serviceWorker" in navigator ? await navigator.serviceWorker.getRegistration() : null;
+      if (reg) { await reg.update(); }
+      out.textContent = "Checked. Reloading to load the newest version.";
+      setTimeout(() => location.reload(), 800);
+    } catch (e) { out.textContent = "Could not check right now. Please try again later."; }
+  });
+</script>
+{% endblock %}

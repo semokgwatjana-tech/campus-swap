@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Settings{% endblock %}
+{% block content %}
+<div class="container my-4">
+  <h1 class="h2 fw-bold mb-1">Settings</h1>
+  <p class="text-muted-navy mb-4">{{ current_user.full_name }}{% if current_user.username %}, @{{ current_user.username }}{% endif %}</p>
+  <div class="row g-3">
+    {% for key, title, desc, icon, endpoint in sections %}
+    <div class="col-12 col-md-6 col-lg-4">
+      {% if endpoint %}
+      <a href="{{ url_for(endpoint) }}" class="neu-card settings-tile d-flex gap-3 align-items-center text-decoration-none h-100 {{ 'settings-tile-danger' if key == 'delete' }}">
+        <span class="settings-tile-icon"><i class="bi {{ icon }}" aria-hidden="true"></i></span>
+        <span><span class="d-block fw-bold">{{ title }}</span><span class="d-block small text-muted-navy">{{ desc }}</span></span>
+      </a>
+      {% else %}
+      <div class="neu-card settings-tile d-flex gap-3 align-items-center h-100 settings-tile-soon" aria-disabled="true">
+        <span class="settings-tile-icon"><i class="bi {{ icon }}" aria-hidden="true"></i></span>
+        <span><span class="d-block fw-bold">{{ title }}</span><span class="d-block small text-muted-navy">Coming soon</span></span>
+      </div>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

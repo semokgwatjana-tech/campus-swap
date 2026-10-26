@@ -22,7 +22,7 @@
               <div class="col-4">
                 <label class="payment-method-option w-100 d-block {{ 'selected' if form.listing_type.data == value }}">
                   {{ form.listing_type(value=value) if false }}
-                  <input type="radio" name="listing_type" value="{{ value }}" {{ "checked" if form.listing_type.data == value }} onchange="toggleListingType(this.value)">
+                  <input type="radio" name="listing_type" value="{{ value }}" {{ "checked" if form.listing_type.data == value }} data-change="toggleListingType">
                   <div>{{ label }}</div>
                 </label>
               </div>
@@ -39,15 +39,15 @@
           <div id="priceGroup" class="row align-items-end">
             <div class="col-md-8">{{ f.field(form.price, placeholder="e.g. 250") }}</div>
             <div class="col-md-4 mb-3">
-              <button type="button" class="btn-neu w-100" onclick="suggestPrice()">
-                <i class="bi bi-magic" aria-hidden="true"></i> AI Price Suggestion
+              <button type="button" class="btn-neu w-100" data-click="showPriceGuide">
+                <i class="bi bi-graph-up" aria-hidden="true"></i> Price guide
               </button>
             </div>
           </div>
-          <div id="aiPriceBox" class="ai-suggestion-box mb-3 d-none">
-            <div class="fw-bold small mb-1"><i class="bi bi-stars" aria-hidden="true"></i> Suggested price: R<span id="aiPriceValue">0</span></div>
-            <div class="small text-muted-navy" id="aiPriceRange"></div>
-            <ul class="small text-muted-navy mb-0 mt-1" id="aiPriceBasis"></ul>
+          <div id="priceGuideBox" class="ai-suggestion-box mb-3 d-none" role="status">
+            <div class="fw-bold small mb-1" id="priceGuideTitle"></div>
+            <div class="small text-muted-navy" id="priceGuideBasis"></div>
+            <button type="button" class="btn-neu btn-sm mt-2 d-none" id="priceGuideUse"></button>
           </div>
 
           <div id="swapGroup" class="d-none">
@@ -57,15 +57,9 @@
           {{ f.field(form.description, extra_class="", placeholder="Describe the item's condition, edition, module code, and any notes.") }}
           <textarea class="d-none"></textarea>
 
-          <div class="d-flex justify-content-between align-items-center mb-2">
-            <label class="form-label mb-0">Photos</label>
-            <button type="button" class="btn-neu btn-sm" onclick="generateFromPhoto()">
-              <i class="bi bi-magic" aria-hidden="true"></i> AI Listing Generator
-            </button>
-          </div>
+          <label class="form-label">Photos</label>
           {{ form.photos(class="form-control neu-input mb-1") }}
-          <p class="small text-muted-navy mb-3">Upload a clear photo. The AI Listing Generator can draft a title and description for you to edit.</p>
-          <div id="aiListingBox" class="ai-suggestion-box mb-3 d-none"></div>
+          <p class="small text-muted-navy mb-3">Upload a clear photo of the item. Photos are stored exactly as you upload them.</p>
 
           <div class="row">
             <div class="col-md-6">{{ f.select_field(form.campus) }}</div>
@@ -81,49 +75,38 @@
   </div>
 </div>
 
-<script>
+<script nonce="{{ csp_nonce }}">
 function toggleListingType(value) {
   document.getElementById('priceGroup').classList.toggle('d-none', value !== 'sell');
   document.getElementById('swapGroup').classList.toggle('d-none', value !== 'swap');
 }
 toggleListingType(document.querySelector('input[name="listing_type"]:checked')?.value || 'sell');
 
-function suggestPrice() {
-  const category = document.getElementById('category_id');
-  const condition = document.getElementById('condition');
-  const title = document.getElementById('title');
+function showPriceGuide() {
+  const fmt = v => Number.isInteger(v) ? String(v) : v.toFixed(2);
+  const box = document.getElementById('priceGuideBox');
+  const title = document.getElementById('priceGuideTitle');
+  const basis = document.getElementById('priceGuideBasis');
+  const use = document.getElementById('priceGuideUse');
+  box.classList.remove('d-none');
+  use.classList.add('d-none');
+  title.textContent = 'Checking...';
+  basis.textContent = '';
   const params = new URLSearchParams({
-    category: category.options[category.selectedIndex]?.text?.toLowerCase().replace(/ /g,'-') || 'textbooks',
-    condition: condition.value,
-    title: title.value
+    category_id: document.getElementById('category_id').value,
+    condition: document.getElementById('condition').value
   });
-  fetch("{{ url_for('marketplace.api_suggest_price') }}?" + params.toString())
+  fetch("{{ url_for('marketplace.api_price_guide') }}?" + params.toString())
     .then(r => r.json())
     .then(data => {
-      document.getElementById('price').value = data.suggested_price;
-      document.getElementById('aiPriceValue').textContent = data.suggested_price;
-      document.getElementById('aiPriceRange').textContent = `Typical range: R${data.price_range_low} – R${data.price_range_high}`;
-      const list = document.getElementById('aiPriceBasis');
-      list.innerHTML = data.based_on.map(b => `<li>${b}</li>`).join('');
-      document.getElementById('aiPriceBox').classList.remove('d-none');
-    });
-}
-
-function generateFromPhoto() {
-  const fd = new FormData();
-  fd.append('csrf_token', document.querySelector('input[name=csrf_token]').value);
-  fd.append('hint_text', document.getElementById('title').value);
-  fetch("{{ url_for('marketplace.api_generate_listing') }}", { method: 'POST', body: fd })
-    .then(r => r.json())
-    .then(data => {
-      document.getElementById('title').value = data.title;
-      document.getElementById('description').value = data.description;
-      const box = document.getElementById('aiListingBox');
-      box.innerHTML = `<div class="fw-bold small mb-1"><i class="bi bi-stars" aria-hidden="true"></i> AI-generated draft applied</div>
-        <div class="small text-muted-navy">Keywords: ${data.keywords.join(', ')}</div>
-        <div class="small text-muted-navy mt-1">${data.note}</div>`;
-      box.classList.remove('d-none');
-    });
+      if (!data.available) { title.textContent = 'No price guide yet'; basis.textContent = data.message; return; }
+      title.textContent = 'Similar items: R' + fmt(data.low) + ' to R' + fmt(data.high) + ', middle price R' + fmt(data.median);
+      basis.textContent = 'Based on ' + data.basis + '.';
+      use.textContent = 'Use R' + fmt(data.median);
+      use.classList.remove('d-none');
+      use.onclick = () => { document.getElementById('price').value = data.median; };
+    })
+    .catch(() => { title.textContent = 'The price guide could not be loaded.'; });
 }
 </script>
 {% endblock %}

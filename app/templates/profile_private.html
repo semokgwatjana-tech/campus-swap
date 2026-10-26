@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Private profile{% endblock %}
+{% block content %}
+<div class="container my-5">
+  <div class="neu-surface p-5 text-center mx-auto" style="max-width:34rem">
+    <img src="{{ url_for('static', filename='img/default_avatar.svg') }}" class="avatar-circle avatar-circle-lg mb-3" alt="">
+    <h1 class="h4 fw-bold">This profile is private</h1>
+    <p class="text-muted-navy mb-0">This student keeps their profile to themselves. Their listings are still in the marketplace.</p>
+  </div>
+</div>
+{% endblock %}

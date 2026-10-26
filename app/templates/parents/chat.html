@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Chat{% endblock %}
+{% block content %}
+<div class="container my-4" style="max-width:44rem">
+  <a href="{{ url_for('parents.child', learner_id=learner.id) }}" class="small">&larr; {{ learner.full_name }}</a>
+  <h1 class="h4 fw-bold mt-2">Chat about {{ conversation.listing.title if conversation.listing else 'a listing' }}</h1>
+  <p class="small text-muted-navy">Read only.</p>
+  <div class="neu-surface p-3">
+    {% for m in messages %}
+    <div class="mb-3">
+      <div class="small text-muted-navy">{{ m.sent_at.strftime('%d %b %Y %H:%M') }}, {{ learner.full_name if m.sender_id == learner.id else 'The other student' }}</div>
+      <div>{{ m.body or '' }}</div>
+      {% if m.offer_price is not none %}<div class="small fw-bold">Offer: {{ currency }}{{ "%.2f"|format(m.offer_price) }}{% if m.offer_status %} ({{ m.offer_status }}){% endif %}</div>{% endif %}
+      {% if m.proposed_pickup %}<div class="small">Pickup suggested: {{ m.proposed_pickup }}</div>{% endif %}
+      {% if m.image_filename %}<img src="{{ url_for('static', filename='uploads/' ~ m.image_filename) }}" alt="Photo sent in the chat" style="max-width:14rem" class="rounded-3 mt-1">{% endif %}
+    </div>
+    {% else %}<p class="mb-0">No messages.</p>{% endfor %}
+  </div>
+</div>
+{% endblock %}

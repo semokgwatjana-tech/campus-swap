@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}{{ "Create account" if mode == "signup" else "Sign in" }}{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{{ url_for('static', filename='css/portal.css') }}">{% endblock %}
+
+{% macro err(f) %}{% for e in f.errors %}<p class="pt-error" role="alert">{{ e }}</p>{% endfor %}{% endmacro %}
+
+{% block content %}
+<div class="portal-wrap">
+  <div class="portal {{ 'is-signup' if mode == 'signup' else 'is-signin' }}" id="portal">
+
+    <div class="portal-blade" aria-hidden="true"><span class="blade-edge"></span><span class="blade-fill"></span></div>
+
+    <div class="portal-copy copy-in" aria-hidden="{{ 'true' if mode == 'signup' else 'false' }}">
+      <span class="pt-brand"><span class="pt-badge">CS</span>CampusSwap</span>
+      <p class="pt-headline">Welcome <em>back.</em></p>
+      <p class="pt-sub">Your listings, chats and saved items are right where you left them.</p>
+    </div>
+    <div class="portal-copy copy-up" aria-hidden="{{ 'false' if mode == 'signup' else 'true' }}">
+      <span class="pt-brand"><span class="pt-badge">CS</span>CampusSwap</span>
+      <p class="pt-headline">Buy. Sell. Swap. <em>Learn.</em></p>
+      <p class="pt-sub">Join students near you to pass on textbooks and study guides, and get the ones you need.</p>
+    </div>
+
+    <section class="pane pane-in" id="pane-signin" aria-labelledby="h-signin" {{ 'inert' if mode == 'signup' }}>
+      <h1 class="pt-title" id="h-signin">Sign in</h1>
+      <form method="POST" action="{{ url_for('auth.login', next=request.args.get('next')) }}" novalidate>
+        {{ login_form.hidden_tag() }}
+        <div class="pt-field">
+          <label for="{{ login_form.school_email.id }}">School email</label>
+          <div class="pt-input"><input type="email" id="{{ login_form.school_email.id }}" name="{{ login_form.school_email.name }}" value="{{ login_form.school_email.data or '' }}" autocomplete="username" placeholder="you@myschool.ac.za" required><i class="bi bi-envelope" aria-hidden="true"></i></div>
+          {{ err(login_form.school_email) }}
+        </div>
+        <div class="pt-field">
+          <label for="{{ login_form.password.id }}">Password</label>
+          <div class="pt-input"><input type="password" id="{{ login_form.password.id }}" name="{{ login_form.password.name }}" autocomplete="current-password" placeholder="Your password" required>
+            <button type="button" class="pt-eye" data-toggle-password aria-label="Show password" aria-pressed="false"><i class="bi bi-eye" aria-hidden="true"></i></button></div>
+          {{ err(login_form.password) }}
+        </div>
+        <div class="pt-row">
+          <label class="pt-check" for="{{ login_form.remember_me.id }}"><input type="checkbox" id="{{ login_form.remember_me.id }}" name="{{ login_form.remember_me.name }}" value="y" {{ 'checked' if login_form.remember_me.data }}> Keep me signed in</label>
+          <a href="{{ url_for('auth.forgot_password') }}" class="pt-link">Forgot password?</a>
+        </div>
+        <button type="submit" class="pt-button">Sign in</button>
+      </form>
+      <p class="pt-switch">New to CampusSwap? <a href="{{ url_for('auth.register') }}" data-switch="signup" class="pt-link">Create an account</a></p>
+    </section>
+
+    <section class="pane pane-up" id="pane-signup" aria-labelledby="h-signup" {{ 'inert' if mode != 'signup' }}>
+      <h1 class="pt-title" id="h-signup">Create account</h1>
+      <form method="POST" action="{{ url_for('auth.register') }}" enctype="multipart/form-data" novalidate>
+        {{ signup_form.hidden_tag() }}
+        <div class="pt-two">
+          <div class="pt-field"><label for="{{ signup_form.full_name.id }}">Full name</label>
+            <div class="pt-input"><input id="{{ signup_form.full_name.id }}" name="{{ signup_form.full_name.name }}" value="{{ signup_form.full_name.data or '' }}" autocomplete="name" required></div>{{ err(signup_form.full_name) }}</div>
+          <div class="pt-field"><label for="{{ signup_form.student_number.id }}">Student or learner number</label>
+            <div class="pt-input"><input id="{{ signup_form.student_number.id }}" name="{{ signup_form.student_number.name }}" value="{{ signup_form.student_number.data or '' }}" autocomplete="off" required></div>{{ err(signup_form.student_number) }}</div>
+        </div>
+        <div class="pt-field"><label for="{{ signup_form.school_email.id }}">Email address</label>
+          <div class="pt-input"><input type="email" id="{{ signup_form.school_email.id }}" name="{{ signup_form.school_email.name }}" value="{{ signup_form.school_email.data or '' }}" autocomplete="email" placeholder="you@myschool.ac.za" required><i class="bi bi-envelope" aria-hidden="true"></i></div>{{ err(signup_form.school_email) }}</div>
+        <div class="pt-field"><label for="{{ signup_form.date_of_birth.id }}">Date of birth</label>
+          <div class="pt-input"><input type="date" id="{{ signup_form.date_of_birth.id }}" name="{{ signup_form.date_of_birth.name }}" value="{{ signup_form.date_of_birth.data.isoformat() if signup_form.date_of_birth.data else '' }}" autocomplete="bday" required data-dob></div>
+          <span class="pt-hint">Under 18s and adults use separate sides of Campus Swap</span>{{ err(signup_form.date_of_birth) }}</div>
+        <div class="pt-guardian" id="guardian-block">
+          <p class="pt-guardian-note">You are under 18, so a parent or guardian must agree. We will email them.</p>
+          <div class="pt-two">
+            <div class="pt-field"><label for="{{ signup_form.guardian_name.id }}">Parent or guardian name</label>
+              <div class="pt-input"><input id="{{ signup_form.guardian_name.id }}" name="{{ signup_form.guardian_name.name }}" value="{{ signup_form.guardian_name.data or '' }}" autocomplete="off"></div>{{ err(signup_form.guardian_name) }}</div>
+            <div class="pt-field"><label for="{{ signup_form.guardian_email.id }}">Parent or guardian email</label>
+              <div class="pt-input"><input type="email" id="{{ signup_form.guardian_email.id }}" name="{{ signup_form.guardian_email.name }}" value="{{ signup_form.guardian_email.data or '' }}" autocomplete="off"></div>{{ err(signup_form.guardian_email) }}</div>
+          </div>
+        </div>
+        <div class="pt-two">
+          <div class="pt-field"><label for="{{ signup_form.course.id }}">Course (optional)</label>
+            <div class="pt-input"><input id="{{ signup_form.course.id }}" name="{{ signup_form.course.name }}" value="{{ signup_form.course.data or '' }}" autocomplete="off"></div>{{ err(signup_form.course) }}</div>
+          <div class="pt-field"><label for="{{ signup_form.year_of_study.id }}">Year of study</label>
+            <div class="pt-input"><select id="{{ signup_form.year_of_study.id }}" name="{{ signup_form.year_of_study.name }}">{% for v, label in signup_form.year_of_study.choices %}<option value="{{ v }}" {{ 'selected' if signup_form.year_of_study.data == v }}>{{ label }}</option>{% endfor %}</select></div>{{ err(signup_form.year_of_study) }}</div>
+        </div>
+        <div class="pt-field"><label for="{{ signup_form.campus.id }}">Campus</label>
+          <div class="pt-input"><select id="{{ signup_form.campus.id }}" name="{{ signup_form.campus.name }}">{% for v, label in signup_form.campus.choices %}<option value="{{ v }}" {{ 'selected' if signup_form.campus.data == v }}>{{ label }}</option>{% endfor %}</select></div>{{ err(signup_form.campus) }}</div>
+        <div class="pt-field"><label for="{{ signup_form.profile_picture.id }}">Profile picture (optional)</label>
+          <div class="pt-input"><input type="file" id="{{ signup_form.profile_picture.id }}" name="{{ signup_form.profile_picture.name }}" accept="image/*"></div>{{ err(signup_form.profile_picture) }}</div>
+        <div class="pt-two">
+          <div class="pt-field"><label for="{{ signup_form.password.id }}">Password</label>
+            <div class="pt-input"><input type="password" id="{{ signup_form.password.id }}" name="{{ signup_form.password.name }}" autocomplete="new-password" minlength="10" maxlength="128" required>
+              <button type="button" class="pt-eye" data-toggle-password aria-label="Show password" aria-pressed="false"><i class="bi bi-eye" aria-hidden="true"></i></button></div>
+            <span class="pt-hint">At least 10 characters. A few random words works well.</span>{{ err(signup_form.password) }}</div>
+          <div class="pt-field"><label for="{{ signup_form.confirm_password.id }}">Confirm password</label>
+            <div class="pt-input"><input type="password" id="{{ signup_form.confirm_password.id }}" name="{{ signup_form.confirm_password.name }}" autocomplete="new-password" required>
+              <button type="button" class="pt-eye" data-toggle-password aria-label="Show password" aria-pressed="false"><i class="bi bi-eye" aria-hidden="true"></i></button></div>{{ err(signup_form.confirm_password) }}</div>
+        </div>
+        <div class="pt-field">
+          <label class="pt-check pt-consent" for="{{ signup_form.consent.id }}"><input type="checkbox" id="{{ signup_form.consent.id }}" name="{{ signup_form.consent.name }}" value="y" {{ 'checked' if signup_form.consent.data }}>
+            <span>I agree to the <a href="{{ url_for('main.terms') }}" target="_blank" rel="noopener" class="pt-link">Terms &amp; Conditions</a> and <a href="{{ url_for('main.privacy_policy') }}" target="_blank" rel="noopener" class="pt-link">Privacy Policy</a>, including how my student information is used to verify my account.</span></label>
+          {{ err(signup_form.consent) }}
+        </div>
+        <button type="submit" class="pt-button">Create account</button>
+      </form>
+      <p class="pt-switch">Already have an account? <a href="{{ url_for('auth.login') }}" data-switch="signin" class="pt-link">Sign in</a></p>
+    </section>
+
+  </div>
+</div>
+{% endblock %}
+{% block extra_scripts %}<script src="{{ url_for('static', filename='js/portal.js') }}"></script>{% endblock %}

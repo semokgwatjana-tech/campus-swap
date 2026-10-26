@@ -1,0 +1,42 @@
+{% extends "settings/_layout.html" %}
+{% block title %}Storage and data{% endblock %}
+{% block page_title %}Storage and data{% endblock %}
+{% macro size(n) %}{% if n >= 1048576 %}{{ "%.1f"|format(n / 1048576) }} MB{% elif n >= 1024 %}{{ "%.0f"|format(n / 1024) }} KB{% else %}{{ n }} bytes{% endif %}{% endmacro %}
+{% block body %}
+<div class="neu-surface p-4 mb-4">
+  <h2 class="h5 fw-bold">What you have uploaded</h2>
+  <p class="display-6 fw-bold mb-3">{{ size(total) }}</p>
+  <table class="table table-sm mb-2">
+    <tbody>
+      <tr><th scope="row" class="fw-normal">Listing photos</th><td class="text-end">{{ size(listing_bytes) }}</td></tr>
+      <tr><th scope="row" class="fw-normal">Profile picture</th><td class="text-end">{{ size(profile_bytes) }}</td></tr>
+      <tr><th scope="row" class="fw-normal">Photos you sent in chats</th><td class="text-end">{{ size(chat_bytes) }}</td></tr>
+    </tbody>
+  </table>
+  <p class="small text-muted-navy mb-0">Your photos are stored exactly as you uploaded them. Campus Swap does not resize, compress or enhance them.</p>
+</div>
+<div class="neu-surface p-4">
+  <h2 class="h5 fw-bold">Free up space on this device</h2>
+  <p>Clears the saved copies of pages, styles and icons that this device keeps so the app opens faster. Your account, listings and chats are not touched.</p>
+  <button type="button" class="btn-neu-primary" id="clear-cache">Clear saved data</button>
+  <p class="mt-3 mb-0" id="clear-result" role="status"></p>
+</div>
+{% endblock %}
+{% block extra_scripts %}
+<script nonce="{{ csp_nonce }}">
+  document.getElementById("clear-cache").addEventListener("click", async () => {
+    const out = document.getElementById("clear-result");
+    try {
+      let bytes = 0, n = 0;
+      if ("caches" in window) {
+        for (const name of await caches.keys()) {
+          const c = await caches.open(name);
+          for (const req of await c.keys()) { const r = await c.match(req); if (r) { bytes += (await r.clone().blob()).size; } n++; }
+          await caches.delete(name);
+        }
+      }
+      out.textContent = n ? "Cleared " + n + " saved files (" + (bytes / 1048576).toFixed(2) + " MB). They will download again when needed." : "There was nothing saved on this device.";
+    } catch (e) { out.textContent = "This browser would not let us clear saved data."; }
+  });
+</script>
+{% endblock %}

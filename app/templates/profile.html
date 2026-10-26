@@ -8,7 +8,7 @@
       <div class="col-auto">
         <img src="{{ url_for('static', filename='uploads/profiles/' ~ profile_user.profile.profile_picture) if profile_user.profile.profile_picture != 'default_avatar.png' else url_for('static', filename='img/default_avatar.svg') }}"
              class="avatar-circle" style="width:110px;height:110px;border-radius:28px;" alt="{{ profile_user.full_name }}"
-             onerror="this.src='{{ url_for('static', filename='img/default_avatar.svg') }}'">
+             data-fallback="{{ url_for('static', filename='img/default_avatar.svg') }}">
       </div>
       <div class="col">
         <h3 class="fw-bold mb-1 d-flex align-items-center gap-2">

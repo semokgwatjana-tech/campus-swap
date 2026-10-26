@@ -1,0 +1,15 @@
+{% extends "settings/_layout.html" %}
+{% block title %}Chats{% endblock %}
+{% block page_title %}Chats{% endblock %}
+{% block body %}
+<div class="neu-surface p-4 mb-4">
+  <h2 class="h5 fw-bold">Chat backup</h2>
+  <p>You have {{ conversations }} chat{{ "" if conversations == 1 else "s" }} with {{ messages }} message{{ "" if messages == 1 else "s" }}. Download a copy to keep.</p>
+  <div class="d-flex flex-wrap gap-2">
+    <a class="btn-neu-primary" href="{{ url_for('settings.chat_backup', fmt='txt') }}">Download as text</a>
+    <a class="btn-neu" href="{{ url_for('settings.chat_backup', fmt='json') }}">Download as JSON</a>
+  </div>
+  <p class="small text-muted-navy mt-3 mb-0">The file contains private messages. Store it somewhere safe. Photos are listed by file name and are not included.</p>
+</div>
+<div class="neu-surface p-4"><h2 class="h6 fw-bold">Voice notes and transferring chats</h2><p class="small text-muted-navy mb-0">Both are coming soon.</p></div>
+{% endblock %}

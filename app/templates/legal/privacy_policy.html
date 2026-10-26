@@ -6,14 +6,14 @@
     <div class="col-lg-9">
       <div class="neu-surface p-4 p-md-5 legal-page">
         <h1 class="fw-bold mb-1">Privacy Policy</h1>
-        <p class="text-muted-navy mb-4">Last updated: [INSERT DATE]. This policy explains how Campus Swap collects, uses, and protects your personal information under the Protection of Personal Information Act 4 of 2013 (POPIA).</p>
+        <p class="text-muted-navy mb-4">Last updated: {{ business.last_updated }}. This policy explains how Campus Swap collects, uses, and protects your personal information under the Protection of Personal Information Act 4 of 2013 (POPIA).</p>
 
         <h2 class="h5 fw-bold mt-4">1. Who we are</h2>
         <p>
           The party responsible for your personal information ("responsible party" under POPIA) is
-          [INSERT REGISTERED COMPANY NAME], registration number
-          [INSERT COMPANY REGISTRATION NUMBER], of [INSERT PHYSICAL BUSINESS ADDRESS]. Our
-          information officer can be reached at [INSERT INFORMATION OFFICER EMAIL].
+          {{ business.name }}, registration number
+          {{ business.reg_number }}, of {{ business.address }}. Our
+          information officer can be reached at {{ business.information_officer_email }}.
         </p>
 
         <h2 class="h5 fw-bold mt-4">2. Information we collect</h2>
@@ -116,7 +116,7 @@
             information has been misused.</li>
         </ul>
         <p>
-          To exercise any of these rights, contact us at [INSERT PRIVACY CONTACT EMAIL].
+          To exercise any of these rights, contact us at {{ business.privacy_email }}.
         </p>
 
         <h2 class="h5 fw-bold mt-4">9. Security</h2>

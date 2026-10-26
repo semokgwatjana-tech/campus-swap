@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container my-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <a href="{{ url_for('settings.home') }}" class="small"><i class="bi bi-arrow-left" aria-hidden="true"></i> Settings</a>
+      <h1 class="h2 fw-bold mt-2 mb-4">{% block page_title %}{% endblock %}</h1>
+      {% block body %}{% endblock %}
+    </div>
+  </div>
+</div>
+{% endblock %}

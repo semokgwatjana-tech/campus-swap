@@ -232,11 +232,11 @@ label { font-weight: 600; color: var(--cs-navy-soft); font-size: 0.9rem; }
   gap: 0.5rem;
 }
 .navbar-brand-cs .brand-badge {
-  width: 38px; height: 38px; border-radius: 12px;
+  width: 38px; height: 38px; border-radius: var(--brand-radius, 12px);
   background: var(--cs-green-dark);
   display: flex; align-items: center; justify-content: center;
-  box-shadow: var(--shadow-raised-sm);
-  color: white; font-weight: 900;
+  box-shadow: var(--shadow-raised-sm), var(--brand-ring, 0 0 0 0 transparent);
+  color: var(--cs-white); font-weight: 900;
 }
 
 .nav-link-neu {
@@ -468,3 +468,119 @@ label { font-weight: 600; color: var(--cs-navy-soft); font-size: 0.9rem; }
   .hero-section { padding: 3rem 0 2rem; text-align: center; }
   .hero-subtitle { margin: 0 auto 1.5rem; }
 }
+
+/* Shown only while payments are simulated. */
+.demo-banner {
+  background: var(--cs-navy);
+  color: var(--cs-white);
+  text-align: center;
+  font-size: 0.85rem;
+  padding: 0.4rem 1rem;
+}
+
+
+/* =========================================================================
+   Settings
+   ========================================================================= */
+
+.settings-tile { color: var(--cs-navy); padding: 1.1rem 1.25rem; }
+.settings-tile:hover { color: var(--cs-navy); }
+.settings-tile-icon {
+  width: 46px; height: 46px; flex: 0 0 46px; border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--cs-green-light); color: var(--cs-green-dark); font-size: 1.3rem;
+}
+.settings-tile-danger .settings-tile-icon { background: var(--cs-slate-light); color: var(--cs-danger); }
+.settings-tile-soon { box-shadow: none; border: 1px dashed var(--cs-navy-soft); }
+.settings-tile-soon:hover { transform: none; box-shadow: none; }
+
+
+/* =========================================================================
+   Appearance modes. Each mode only swaps the colour variables above, so every
+   page follows it. In the dark modes --cs-white is the dark colour that sits
+   on top of the accent (button text, banner text), and --cs-green-dark is the
+   light accent.
+   ========================================================================= */
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --cs-bg: #151a23; --cs-navy: #e8ecf3; --cs-navy-soft: #b4bdcc;
+  --cs-green: #3ddc84; --cs-green-dark: #5fd49a; --cs-green-light: #1e3a2d;
+  --cs-white: #0f131a; --cs-gray: #2a3140; --cs-danger: #ff8a80; --cs-warning: #ffb74d;
+  --cs-slate: #b8c2d4; --cs-slate-light: #242c3b;
+  --shadow-light: #1c2230; --shadow-dark: #0d1017;
+  --brand-radius: 50%;
+}
+html[data-theme="blue"] {
+  --cs-bg: #e6eefb; --cs-navy: #14264d; --cs-navy-soft: #3d4f78;
+  --cs-green: #3b82f6; --cs-green-dark: #1d4ed8; --cs-green-light: #dbe7ff;
+  --cs-white: #ffffff; --cs-gray: #cdd8ee; --cs-danger: #b3261e; --cs-warning: #8a4f00;
+  --cs-slate: #3a4a6b; --cs-slate-light: #e0e8f8;
+  --shadow-light: #ffffff; --shadow-dark: #bccbe6;
+  --brand-radius: 8px;
+}
+html[data-theme="velvet"] {
+  color-scheme: dark;
+  --cs-bg: #2a0f1c; --cs-navy: #fbeef2; --cs-navy-soft: #e3c3cf;
+  --cs-green: #e8708f; --cs-green-dark: #f4a3b8; --cs-green-light: #4a1830;
+  --cs-white: #240a16; --cs-gray: #4d2336; --cs-danger: #ffb3ad; --cs-warning: #ffcc80;
+  --cs-slate: #e8cdd7; --cs-slate-light: #3a1627;
+  --shadow-light: #371729; --shadow-dark: #1a0711;
+  --brand-radius: 14px; --brand-ring: 0 0 0 2px var(--cs-green);
+}
+
+/* Bootstrap parts that carry their own colours */
+html[data-theme="dark"], html[data-theme="velvet"], html[data-theme="blue"] {
+  --bs-body-bg: var(--cs-bg); --bs-body-color: var(--cs-navy); --bs-border-color: var(--cs-gray);
+  --bs-secondary-color: var(--cs-navy-soft); --bs-tertiary-bg: var(--cs-slate-light);
+}
+html[data-theme="dark"] .dropdown-menu, html[data-theme="velvet"] .dropdown-menu, html[data-theme="blue"] .dropdown-menu {
+  background: var(--cs-bg); --bs-dropdown-link-color: var(--cs-navy);
+  --bs-dropdown-link-hover-bg: var(--cs-slate-light); --bs-dropdown-link-hover-color: var(--cs-navy);
+}
+html[data-theme="dark"] .form-text, html[data-theme="velvet"] .form-text, html[data-theme="blue"] .form-text { color: var(--cs-navy-soft); }
+html[data-theme="dark"] .input-group-text, html[data-theme="velvet"] .input-group-text, html[data-theme="blue"] .input-group-text {
+  background: var(--cs-slate-light); color: var(--cs-navy); border-color: var(--cs-gray);
+}
+html[data-theme="dark"] .accordion-button, html[data-theme="velvet"] .accordion-button, html[data-theme="blue"] .accordion-button {
+  color: var(--cs-navy); box-shadow: none;
+}
+html[data-theme="dark"] .accordion-button::after, html[data-theme="velvet"] .accordion-button::after { filter: invert(1); }
+html[data-theme="dark"] .table, html[data-theme="velvet"] .table, html[data-theme="blue"] .table {
+  --bs-table-color: var(--cs-navy); --bs-table-bg: transparent; --bs-table-border-color: var(--cs-gray);
+}
+html[data-theme="dark"] pre, html[data-theme="velvet"] pre, html[data-theme="blue"] pre { color: var(--cs-navy); }
+html[data-theme="dark"] .navbar-neu, html[data-theme="velvet"] .navbar-neu { box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35); }
+
+/* =========================================================================
+   Accessibility options
+   ========================================================================= */
+
+html[data-theme="light"][data-contrast="high"] {
+  --cs-navy: #0f1729; --cs-navy-soft: #2b3550; --cs-green-dark: #0b5a35;
+  --cs-gray: #9aa3b2; --shadow-dark: #a5aebb; --cs-danger: #8f1d17; --cs-warning: #7a4600;
+}
+html[data-contrast="high"] .neu-surface,
+html[data-contrast="high"] .neu-card,
+html[data-contrast="high"] .neu-inset,
+html[data-contrast="high"] .form-control.neu-input,
+html[data-contrast="high"] .form-select.neu-input,
+html[data-contrast="high"] textarea.neu-input { border: 2px solid var(--cs-navy-soft); }
+html[data-contrast="high"] main a:not([class*="btn-"]):not(.settings-tile) { text-decoration: underline; }
+
+html[data-motion="off"] *, html[data-motion="off"] *::before, html[data-motion="off"] *::after {
+  animation: none !important; transition: none !important; scroll-behavior: auto !important;
+}
+html[data-motion="off"] .neu-card:hover, html[data-motion="off"] .btn-neu:hover,
+html[data-motion="off"] .btn-neu-primary:hover { transform: none; }
+
+
+/* Show/hide eye added to password fields by app.js */
+.pw-wrap { position: relative; display: block; }
+.pw-wrap input { padding-right: 2.9rem; }
+.pw-toggle {
+  position: absolute; right: 0.45rem; top: 50%; transform: translateY(-50%);
+  border: 0; background: transparent; color: var(--cs-navy-soft); padding: 0.4rem; line-height: 1;
+  border-radius: 8px; cursor: pointer;
+}
+.pw-toggle:focus-visible { outline: 3px solid var(--cs-green-dark); outline-offset: 1px; }

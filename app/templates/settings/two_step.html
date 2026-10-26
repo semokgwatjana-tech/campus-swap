@@ -1,0 +1,43 @@
+{% extends "settings/_layout.html" %}
+{% block title %}Two-step verification{% endblock %}
+{% block page_title %}Two-step verification{% endblock %}
+{% block body %}
+{% if new_codes %}
+<div class="neu-surface p-4 mb-4">
+  <h2 class="h5 fw-bold">Save your recovery codes</h2>
+  <p>Each code works once if you lose access to your authenticator app. They are shown only now, so save them somewhere safe.</p>
+  <pre class="neu-inset p-3 mb-3" tabindex="0">{% for c in new_codes %}{{ c }}
+{% endfor %}</pre>
+  <a class="btn-neu-primary d-inline-block" href="{{ url_for('settings.account') }}">I have saved them</a>
+</div>
+{% elif enabled %}
+<div class="neu-surface p-4 mb-4">
+  <p class="mb-1">Two-step verification is <strong>on</strong>.</p>
+  <p class="text-muted-navy small">Recovery codes left: {{ codes_left }}.</p>
+  <form method="POST" class="mb-3">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label for="pw" class="form-label">Current password</label>
+    <input id="pw" name="current_password" type="password" class="form-control neu-input mb-2" autocomplete="current-password" required>
+    <button class="btn-neu" type="submit" name="action" value="regenerate">Get new recovery codes</button>
+    <button class="btn-neu-danger" type="submit" name="action" value="disable">Turn off</button>
+  </form>
+</div>
+{% else %}
+<div class="neu-surface p-4 mb-4">
+  <ol class="mb-4">
+    <li class="mb-2">Install an authenticator app, such as Google Authenticator, Microsoft Authenticator or Authy.</li>
+    <li class="mb-2">In the app, add an account by entering this key by hand:
+      <div class="neu-inset p-2 my-2"><code class="user-select-all fs-5" aria-label="Setup key">{{ secret }}</code></div>
+      <span class="small text-muted-navy">Account name: {{ current_user.school_email }}. Type: time-based.</span></li>
+    <li>Enter the 6-digit code the app shows.</li>
+  </ol>
+  <form method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="action" value="enable">
+    <label for="code" class="form-label">6-digit code</label>
+    <input id="code" name="code" inputmode="numeric" pattern="[0-9 ]*" maxlength="7" autocomplete="one-time-code" class="form-control neu-input mb-3" style="max-width:12rem" required>
+    <button class="btn-neu-primary" type="submit">Turn on</button>
+  </form>
+</div>
+{% endif %}
+{% endblock %}

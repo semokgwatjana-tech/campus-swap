@@ -98,10 +98,32 @@ class SandboxPaymentGateway(BasePaymentGateway):
         return f"SANDBOX-{suffix}"
 
 
+# Register a real provider here once its class exists, for example:
+#     GATEWAYS["payfast"] = PayFastGateway
+# then set the environment variable PAYMENT_GATEWAY=payfast on the server.
+# Nothing else in the app needs to change.
+GATEWAYS = {
+    "sandbox": SandboxPaymentGateway,
+}
+
+
 def get_gateway():
-    """Factory so routes never instantiate a gateway class directly - makes
-    swapping in a real provider later a one-line change."""
-    return SandboxPaymentGateway()
+    """Factory so routes never instantiate a gateway class directly.
+
+    The provider comes from the PAYMENT_GATEWAY setting. An unknown value
+    raises an error on purpose: silently falling back to the sandbox would
+    let a live site look like it is taking real payments when it is not.
+    """
+    from flask import current_app
+
+    name = current_app.config.get("PAYMENT_GATEWAY", "sandbox")
+    try:
+        return GATEWAYS[name]()
+    except KeyError:
+        raise PaymentError(
+            f"Payment gateway '{name}' is not available. "
+            f"Configured options: {', '.join(GATEWAYS)}."
+        )
 
 
 def mask_card_number(card_number):

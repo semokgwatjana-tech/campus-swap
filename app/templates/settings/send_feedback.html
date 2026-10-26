@@ -1,0 +1,17 @@
+{% extends "settings/_layout.html" %}
+{% set titles = {"feedback": "Send feedback", "issue": "Report a technical issue", "contact": "Contact us"} %}
+{% block title %}{{ titles[kind] }}{% endblock %}
+{% block page_title %}{{ titles[kind] }}{% endblock %}
+{% block body %}
+<form method="POST" class="neu-surface p-4">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <input type="hidden" name="kind" value="{{ kind }}">
+  <div class="mb-3"><label for="subject" class="form-label">Subject</label><input id="subject" name="subject" maxlength="160" class="form-control neu-input" required></div>
+  <div class="mb-3">
+    <label for="message" class="form-label">{{ "What happened, and what were you doing?" if kind == "issue" else "Message" }}</label>
+    <textarea id="message" name="message" rows="6" maxlength="4000" class="form-control neu-input" required></textarea>
+  </div>
+  <p class="small text-muted-navy">Your name, email and app version ({{ app_version }}) are sent with your message so we can reply.</p>
+  <button class="btn-neu-primary" type="submit">Send</button>
+</form>
+{% endblock %}

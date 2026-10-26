@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Requests{% endblock %}
+{% block content %}
+<div class="container my-4" style="max-width:52rem">
+  <h1 class="h3 fw-bold mb-1">Requests</h1>
+  <p class="text-muted-navy">Donation requests and swap offers for your items, and the ones you sent.</p>
+
+  <div class="neu-surface p-4 mb-4">
+    <h2 class="h5 fw-bold">Donation requests for your items</h2>
+    {% for r in incoming_donations %}
+    <div class="neu-card p-3 mb-3">
+      <div><strong>{{ r.requester.full_name }}</strong> would like <a href="{{ url_for('marketplace.listing_detail', listing_id=r.listing.id) }}">{{ r.listing.title }}</a></div>
+      {% if r.message %}<div class="small text-muted-navy mt-1">"{{ r.message }}"</div>{% endif %}
+      <div class="small text-muted-navy">{{ r.created_at.strftime('%d %b %Y, %H:%M') }}</div>
+      <div class="d-flex gap-2 mt-2">
+        <form method="POST" action="{{ url_for('transactions.manage_donation', request_id=r.id, action='approve') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn-neu-primary btn-sm" type="submit">Approve</button></form>
+        <form method="POST" action="{{ url_for('transactions.manage_donation', request_id=r.id, action='decline') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn-neu btn-sm" type="submit">Decline</button></form>
+      </div>
+    </div>
+    {% else %}<p class="mb-0 text-muted-navy">None waiting.</p>{% endfor %}
+  </div>
+
+  <div class="neu-surface p-4 mb-4">
+    <h2 class="h5 fw-bold">Swap offers for your items</h2>
+    {% for r in incoming_swaps %}
+    <div class="neu-card p-3 mb-3">
+      <div><strong>{{ r.requester.full_name }}</strong> offers <a href="{{ url_for('marketplace.listing_detail', listing_id=r.offered_listing.id) }}">{{ r.offered_listing.title }}</a> for <a href="{{ url_for('marketplace.listing_detail', listing_id=r.target_listing.id) }}">{{ r.target_listing.title }}</a></div>
+      {% if r.top_up_amount and r.top_up_amount > 0 %}<div class="small fw-bold mt-1">Plus a top-up of {{ currency }}{{ "%.2f"|format(r.top_up_amount) }} paid by {{ r.requester.full_name.split(' ')[0] }}</div>{% endif %}
+      {% if r.message %}<div class="small text-muted-navy mt-1">"{{ r.message }}"</div>{% endif %}
+      <div class="d-flex gap-2 mt-2">
+        <form method="POST" action="{{ url_for('transactions.manage_swap', swap_id=r.id, action='accept') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn-neu-primary btn-sm" type="submit">Accept</button></form>
+        <form method="POST" action="{{ url_for('transactions.manage_swap', swap_id=r.id, action='decline') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn-neu btn-sm" type="submit">Decline</button></form>
+      </div>
+    </div>
+    {% else %}<p class="mb-0 text-muted-navy">None waiting.</p>{% endfor %}
+  </div>
+
+  <div class="neu-surface p-4 mb-4">
+    <h2 class="h5 fw-bold">Donations you asked for</h2>
+    {% for r in sent_donations %}
+    <div class="receipt-row"><span>{{ r.listing.title }}</span><span>{{ r.status.value|capitalize }}</span></div>
+    {% else %}<p class="mb-0 text-muted-navy">None yet.</p>{% endfor %}
+  </div>
+
+  <div class="neu-surface p-4">
+    <h2 class="h5 fw-bold">Swaps you offered</h2>
+    {% for r in sent_swaps %}
+    <div class="receipt-row"><span>{{ r.offered_listing.title }} for {{ r.target_listing.title }}</span>
+      <span>{{ r.status.value|capitalize }}
+        {% if topups.get(r.id) %} <a class="ms-2" href="{{ url_for('transactions.checkout', transaction_id=topups[r.id].id) }}">Pay the top-up</a>{% endif %}</span></div>
+    {% else %}<p class="mb-0 text-muted-navy">None yet.</p>{% endfor %}
+  </div>
+</div>
+{% endblock %}

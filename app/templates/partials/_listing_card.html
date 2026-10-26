@@ -4,7 +4,7 @@
     <div class="listing-img-wrap">
       {% if listing.images %}
       <img src="{{ url_for('static', filename='uploads/' ~ listing.primary_image) }}"
-           onerror="this.src='{{ url_for('static', filename='uploads/listings/placeholder.png') }}'" alt="{{ listing.title }}">
+           data-fallback="{{ url_for('static', filename='uploads/listings/placeholder.png') }}" alt="{{ listing.title }}">
       {% else %}
       <img src="{{ url_for('static', filename='uploads/listings/placeholder.png') }}" alt="{{ listing.title }}">
       {% endif %}
